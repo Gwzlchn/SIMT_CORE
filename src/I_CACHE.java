@@ -12,6 +12,13 @@ public class I_CACHE {
         all_ins = new Instructions(file_name);
 
     }
+    public JTable init_i_cache_table(){
+
+    }
+    public JTable update_i_cache_table(){
+
+    }
+
 
 
 }
