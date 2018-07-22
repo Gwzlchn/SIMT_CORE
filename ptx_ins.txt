@@ -1,4 +1,4 @@
-ld r10,0,r1
-ld r11,0,r2
-add r12,r11,r10
-st r12,0,r1
+LD F9,R2,R1
+LD F8,R4,R2
+ADDD F10,F9,F8
+ST F10,R2,R1

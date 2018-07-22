@@ -1,6 +1,2 @@
-#include "Func_Units.h"
+#include "FunctionUnits.h"
 
-FUNC_UNITS::FUNC_UNITS()
-{
-
-}
