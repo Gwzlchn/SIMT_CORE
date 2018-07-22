@@ -51,46 +51,45 @@ struct INSTRUCTION
 };
 
 
-class INSTRUCTIONS_ALL{
-private:
-    std::vector<INSTRUCTION> all_instrucs;
-public:
-    INSTRUCTIONS_ALL(QString file_name);
 
-    void print_all_ins();
-};
-
-
-
-
-class INS_TIME_TALBE_ONE_LINE{
+class INS_ONE_LINE{
 
 public:
-    INSTRUCTION *one_ins;
-
-
-    bool is_ex;
+    INSTRUCTION *m_one_ins;
+    FUNC_UNIT m_func_unit;
+    bool m_is_ex;
     int m_issue_time;
     int m_oc_time;
     int m_ex_time;
     int m_wb_time;
+
+
+    INS_ONE_LINE(QString one_line);
+    void print_one_ins_time();
+
+    void set_all_time(bool n_can_issue,bool n_can_oc,
+                      bool n_can_wb,int now_cycle);
+
 
 };
 
 class INS_TIME_TABLE{
 private:
     //寄存器一共14个
-    std::vector<int> m_reg_status;
-    std::vector<INS_TIME_TALBE_ONE_LINE> m_ins_table;
+   vector<int> m_reg_status;
+    std::vector<INS_ONE_LINE> m_ins_table;
     FUNC_TABLE* m_func_table;
 
 public:
+    INS_TIME_TABLE(QString file_name);
 
+    void read_all_ins_from_file(QString file_name);
     bool n_th_ins_can_issue(int n);
     bool n_th_ins_can_oc(int n);
     bool n_th_ins_can_wb(int n);
-    void go_to_next_cycle(bool );
+    void go_to_next_cycle();
+    void print_all_ins_table();
     //记录当前第n周期
     int m_now_cycle;
-}
+};
 #endif // INSTRUCTIONS_H

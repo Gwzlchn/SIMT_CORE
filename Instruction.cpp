@@ -5,6 +5,13 @@
 #include<QTextStream>
 #include<iostream>
 
+
+
+
+using std::cout;
+using std::endl;
+
+
 std::map<REGISTER,std::string> REGISTER_MAP{
     {F1,"F1"},{F2,"F2"},{F3,"F3"},{F4,"F4"},{F5,"F5"},
     {F6,"F6"},{F7,"F7"},{F8,"F8"},{F9,"F9"},{F10,"F10"},
@@ -18,7 +25,7 @@ std::map<INS_OP,std::string> INS_OP_MAP{
     {LD,"LD"},{ST,"ST"},{MULTD,"MULTD"},{SUBD,"SUBD"},{DIVD,"DIVD"},{ADDD,"ADDD"}
 };
 std::map<INS_OP,int> INS_EX_CYCLE{
-    {LD,2},{ST,4},{MULTD,20},{DIVD,40},{ADDD,10},{SUBD,10}
+    {LD,2},{ST,4},{MULTD,20},{DIVD,40},{ADDD,2},{SUBD,10}
 };
 
 
@@ -26,12 +33,12 @@ std::map<INS_OP,int> INS_EX_CYCLE{
 
 INSTRUCTION::INSTRUCTION(QString one_ins)
 {
-
+    one_ins = one_ins.simplified();
     std::string ins_op_str = one_ins.section(' ',0,0).toStdString();
     std::string ins_dst_str =  one_ins.section(' ',1,1).section(',',0,0).toStdString();
     std::string ins_src1_str = one_ins.section(' ',1,1).section(',',1,1).toStdString();
     std::string ins_src2_str =one_ins.section(' ',1,1).section(',',2,2).toStdString();
-   /* ins_dst = R4;
+    /* ins_dst = R4;
     ins_src1 = R4;
     ins_src2 = R4;
     ins_op = MULTD;*/
@@ -42,24 +49,24 @@ void INSTRUCTION::set_one_ins(std::string one_ins_op, std::string one_ins_dst, s
 
     auto it = REGISTER_MAP.end();
     it = std::find_if(REGISTER_MAP.begin(), REGISTER_MAP.end(), [one_ins_dst](auto item)
-       {
-           return item.second == one_ins_dst;
-       });
+    {
+        return item.second == one_ins_dst;
+    });
     if (it!=REGISTER_MAP.end())
         ins_dst = (*it).first;
 
     it = std::find_if(REGISTER_MAP.begin(), REGISTER_MAP.end(), [one_ins_src1](auto item)
-       {
-           return item.second == one_ins_src1;
-       });
+    {
+        return item.second == one_ins_src1;
+    });
     if (it!=REGISTER_MAP.end())
         ins_src1 = (*it).first;
 
     auto it4 = REGISTER_MAP.end();
     it4 = std::find_if(REGISTER_MAP.begin(), REGISTER_MAP.end(), [one_ins_src2](auto item)
-       {
-           return item.second == one_ins_src2;
-       });
+    {
+        return item.second == one_ins_src2;
+    });
     if (it4!=REGISTER_MAP.end())
         ins_src2 = (*it4).first;
 
@@ -78,10 +85,65 @@ void INSTRUCTION::set_one_ins(std::string one_ins_op, std::string one_ins_dst, s
 }
 
 void INSTRUCTION::print_one_ins(){
-    std::cout<<"ENUM type: " <<" OP "<<ins_op <<"\tCYCLES: "<<ins_cycle<<"\t dst: "<<ins_dst<<"\t src1 "<<ins_src1<<"\t src2 "<<ins_src2<<std::endl;
+    std::cout<<"ENUM type: " <<" OP "<<ins_op <<"\tCYCLES:"<<ins_cycle<<"\tdst:"<<ins_dst<<"\tsrc1:"<<ins_src1<<"\tsrc2:"<<ins_src2<<"\t";
 }
 
-INSTRUCTIONS_ALL::INSTRUCTIONS_ALL(QString file_name){
+
+INS_ONE_LINE::INS_ONE_LINE(QString one_line){
+    m_one_ins = new INSTRUCTION(one_line);
+    m_is_ex = false;
+    m_issue_time = 0;
+    m_ex_time = 0;
+    m_oc_time = 0;
+    m_wb_time = 0;
+}
+
+
+void INS_ONE_LINE::print_one_ins_time(){
+    m_one_ins->print_one_ins();
+    cout<<"ISSUE TIME: "<<m_issue_time<<"\t OC TIME:"<<m_oc_time<<"\t EX TIME: "<<m_ex_time
+       <<"\tWB TIME: "<<m_wb_time<<endl;
+}
+
+
+
+void INS_ONE_LINE::set_all_time(bool n_can_issue,bool n_can_oc,
+                                bool n_can_wb,int now_cycle){
+    if(n_can_issue && this->m_issue_time == 0){
+        this->m_issue_time = now_cycle;
+        return;
+    }
+    if(n_can_oc && this->m_oc_time == 0){
+        this->m_oc_time = now_cycle;
+        this->m_is_ex = true;
+        return;
+    }
+    if((now_cycle - this->m_oc_time == this->m_one_ins->ins_cycle)&&
+            (this->m_ex_time == 0) &&(this->m_oc_time!=0)){
+        this->m_ex_time = now_cycle;
+    }
+    if(n_can_wb && this->m_wb_time == 0 && this->m_ex_time!=0){
+        this->m_wb_time = now_cycle;
+        return;
+    }
+}
+
+
+
+
+
+
+
+INS_TIME_TABLE::INS_TIME_TABLE(QString file_name){
+    this->read_all_ins_from_file(file_name);
+    this->m_func_table = new FUNC_TABLE();
+    this->m_reg_status =  vector<int>(14);
+    this->m_now_cycle = 1;
+}
+
+
+
+void INS_TIME_TABLE::read_all_ins_from_file(QString file_name){
     QFile file(file_name);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
@@ -90,19 +152,13 @@ INSTRUCTIONS_ALL::INSTRUCTIONS_ALL(QString file_name){
     {
         QByteArray line = file.readLine();
         QString str(line);
+        m_ins_table.push_back(INS_ONE_LINE(str));
 
-       INSTRUCTION* one_ins = new INSTRUCTION(str.simplified());
-       all_instrucs.push_back(*one_ins);
     }
     file.close();
 }
 
 
-void INSTRUCTIONS_ALL::print_all_ins(){
-    for(INSTRUCTION  i:all_instrucs){
-        i.print_one_ins();
-    }
-}
 
 //指令从0开始计数！
 //当前指令可否流出？无结构冒险，无WAW
@@ -114,34 +170,36 @@ bool INS_TIME_TABLE::n_th_ins_can_issue(int n){
         return false;
 
     //当前指令
-    INSTRUCTION n_ins = m_ins_table[n].one_ins;
+    INSTRUCTION* n_ins = m_ins_table[n].m_one_ins;
 
-    //本条指令未流出
+    //本条指令已流出
     int& n_is_time = m_ins_table[n].m_issue_time;
     if(n_is_time !=0){
         return false;
     }
 
-    //上一条指令必须已流出，且其流出周期比当前周期小
+    //上一条指令未流出，且其流出周期比当前周期大
     if(n!=0){
         if(m_ins_table[n-1].m_issue_time==0)
             return false;
         if(m_ins_table[n-1].m_issue_time >= m_now_cycle)
             return false;
+
     }
 
     //判断是否存在WAW
-    REGISTER n_dst = n_ins->ins_dst;
+    REGISTER n_dst = m_ins_table[n].m_one_ins->ins_dst;
     for(int i = 0;i<n;i++){
-        if(m_ins_table[i].is_ex){
-            if(m_ins_table[i].one_ins->ins_dst == n_dst)
+        bool ins_active = (m_ins_table[i].m_issue_time!=0&&m_ins_table[i].m_wb_time == 0)||m_ins_table[i].m_is_ex;
+        if(ins_active){
+            if(m_ins_table[i].m_one_ins->ins_dst ==  n_dst)
                 return false;
         }
     }
 
 
 
-   /* //判断是否有RAW
+    /* //判断是否有RAW
      REGISTER m_src1 = m_ins_table[n].one_ins->ins_src1;
      REGISTER m_src2 = m_ins_table[n].one_ins->ins_src2;
 
@@ -160,17 +218,19 @@ bool INS_TIME_TABLE::n_th_ins_can_issue(int n){
     switch (m_op) {
     case LD:
         if(m_func_table->is_func_unit_valid(INTEGER)){
-           m_func_table->occupy_func_table_one(INTEGER,n_ins);
-           m_reg_status[n_dst] = INTEGER;
-           return true;
+            m_func_table->occupy_func_table_one(INTEGER,n_ins);
+            m_reg_status[n_dst] = INTEGER;
+            m_ins_table[n].m_func_unit = INTEGER;
+            return true;
         }
 
         break;
     case ST:
         if(m_func_table->is_func_unit_valid(INTEGER)){
-           m_func_table->occupy_func_table_one(INTEGER,n_ins);
-           m_reg_status[n_dst] = INTEGER;
-           return true;
+            m_func_table->occupy_func_table_one(INTEGER,n_ins);
+            m_reg_status[n_dst] = INTEGER;
+            m_ins_table[n].m_func_unit = INTEGER;
+            return true;
         }
 
         break;
@@ -178,11 +238,13 @@ bool INS_TIME_TABLE::n_th_ins_can_issue(int n){
         if(m_func_table->is_func_unit_valid(MULT1)){
             m_func_table->occupy_func_table_one(MULT1,n_ins);
             m_reg_status[n_dst] = MULT1;
+            m_ins_table[n].m_func_unit = MULT1;
             return true;
         }
         else if(m_func_table->is_func_unit_valid(MULT2)){
             m_func_table->occupy_func_table_one(MULT2,n_ins);
             m_reg_status[n_dst] = MULT2;
+            m_ins_table[n].m_func_unit =  MULT2;
             return true;
         }
         break;
@@ -190,6 +252,7 @@ bool INS_TIME_TABLE::n_th_ins_can_issue(int n){
         if(m_func_table->is_func_unit_valid(DIVIDE1)){
             m_func_table->occupy_func_table_one(DIVIDE1,n_ins);
             m_reg_status[n_dst] = DIVIDE1;
+            m_ins_table[n].m_func_unit = DIVIDE1;
             return true;
         }
         break;
@@ -198,23 +261,152 @@ bool INS_TIME_TABLE::n_th_ins_can_issue(int n){
         if(m_func_table->is_func_unit_valid(ADD1)){
             m_func_table->occupy_func_table_one(ADD1,n_ins);
             m_reg_status[n_dst] = ADD1;
+            m_ins_table[n].m_func_unit = ADD1;
             return true;
         }
         else if(m_func_table->is_func_unit_valid(ADD2)){
             m_func_table->occupy_func_table_one(ADD2,n_ins);
             m_reg_status[n_dst] = ADD2;
+            m_ins_table[n].m_func_unit = ADD2;
             return true;
         }
         break;
     default:
-       return false;
+        return false;
     }
+    return false;
 }
 
 //当前指令可否读操作数？无RAW
 bool INS_TIME_TABLE::n_th_ins_can_oc(int n){
+    //越界
+    if (n>=m_ins_table.size())
+        return false;
 
+    //当前指令
+    INSTRUCTION* n_ins = m_ins_table[n].m_one_ins;
+    INS_ONE_LINE n_ins_line = m_ins_table[n];
+    //未流出
+    if(n_ins_line.m_issue_time == 0){
+        return false;
+    }
+    //本条指令已收集数
+    int& n_oc_time = m_ins_table[n].m_oc_time;
+    if(n_oc_time !=0){
+        return false;
+    }
+
+    //当前指令占用功能部件号
+    FUNC_UNIT n_func = m_ins_table[n].m_func_unit;
+
+    int n_func_Rj = m_func_table->get_table_Rj(n_func);
+    int n_func_Rk = m_func_table->get_table_Rk(n_func);
+
+
+    //当前指令源寄存器
+    REGISTER n_src1 = m_ins_table[n].m_one_ins->ins_src1;
+    REGISTER n_src2 = m_ins_table[n].m_one_ins->ins_src2;
+    for(int i=0;i<n;i++){
+        REGISTER i_dst = m_ins_table[i].m_one_ins->ins_dst;
+        if(m_ins_table[i].m_is_ex){
+            if(!(i_dst == n_src1 || i_dst==n_src2))
+                return true;
+            if(i_dst == n_src1 || i_dst==n_src2 || n_func_Rj==0||n_func_Rk==0){
+                return false;
+            }
+
+        }
+
+
+        else if(i_dst == n_src1 || i_dst==n_src2){
+            if(i_dst == n_src1)
+                m_func_table->set_table_Rj(n_func,1);
+            if(i_dst == n_src2)
+                m_func_table->set_table_Rk(n_func,1);
+
+        }
+        if((i_dst == n_src1 || i_dst==n_src2) && (!m_ins_table[i].m_is_ex)){
+            if(m_now_cycle - m_ins_table[i].m_wb_time <= 0)
+                return false;
+        }
+
+    }
+
+    return true;
 
 }
 
 
+//能否写回
+bool INS_TIME_TABLE::n_th_ins_can_wb(int n){
+    //越界
+    if (n>=m_ins_table.size())
+        return false;
+
+    //当前指令,目的
+    INSTRUCTION* n_ins = m_ins_table[n].m_one_ins;
+    INS_ONE_LINE n_one_line = m_ins_table[n];
+    if(n_one_line.m_ex_time == 0 ||n_one_line.m_oc_time == 0 || n_one_line.m_issue_time == 0)
+        return false;
+    REGISTER n_dst = n_ins->ins_dst;
+    for(int i=0;i<n;i++){
+        //之前指令源
+        REGISTER i_src1 = m_ins_table[i].m_one_ins->ins_src1;
+        REGISTER i_src2 = m_ins_table[i].m_one_ins->ins_src2;
+        bool WAR = (n_dst == i_src1) || (n_dst == i_src2);
+        if(m_ins_table[i].m_is_ex && WAR)
+            return false;
+    }
+    return true;
+
+}
+
+
+void INS_TIME_TABLE::go_to_next_cycle(){
+    bool next_flag = true;
+    while(next_flag){
+        for(int i = 0;i<m_ins_table.size();i++){
+            bool i_ins_can_is = n_th_ins_can_issue(i);
+            bool i_ins_can_oc =n_th_ins_can_oc(i);
+            bool i_ins_can_wb = n_th_ins_can_wb(i);
+            m_ins_table[i].set_all_time(i_ins_can_is,i_ins_can_oc,i_ins_can_wb,m_now_cycle);
+
+
+        }
+        int j = 0;
+        for(;j<m_ins_table.size();j++){
+            if(m_ins_table[j].m_wb_time == 0){
+                next_flag = true;
+                break;
+            }
+             next_flag = false;
+        }
+
+
+
+        std::cout<<"now_CYCLE:"<<m_now_cycle<<std::endl;
+        this->print_all_ins_table();
+        ++m_now_cycle;
+
+        for(int i = 0;i<m_ins_table.size();i++){
+            if(m_ins_table[i].m_wb_time!=0){
+                m_func_table->clear_func_one_line(m_ins_table[i].m_func_unit);
+                m_ins_table[i].m_is_ex = false;
+            }
+
+        }
+
+
+
+
+
+
+    }
+}
+
+
+void INS_TIME_TABLE::print_all_ins_table(){
+    for(INS_ONE_LINE one_line : m_ins_table){
+        one_line.print_one_ins_time();
+    }
+}
