@@ -27,7 +27,6 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     I_Buffer.cpp \
-    base.cpp \
     Instruction.cpp \
     FunctionUnits.cpp
 

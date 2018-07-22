@@ -1,4 +1,5 @@
 #include "Instruction.h"
+#include "FunctionUnits.h"
 #include<QFile>
 #include<QStringList>
 #include<QTextStream>
@@ -102,3 +103,118 @@ void INSTRUCTIONS_ALL::print_all_ins(){
         i.print_one_ins();
     }
 }
+
+//指令从0开始计数！
+//当前指令可否流出？无结构冒险，无WAW
+bool INS_TIME_TABLE::n_th_ins_can_issue(int n){
+
+
+    //越界
+    if (n>=m_ins_table.size())
+        return false;
+
+    //当前指令
+    INSTRUCTION n_ins = m_ins_table[n].one_ins;
+
+    //本条指令未流出
+    int& n_is_time = m_ins_table[n].m_issue_time;
+    if(n_is_time !=0){
+        return false;
+    }
+
+    //上一条指令必须已流出，且其流出周期比当前周期小
+    if(n!=0){
+        if(m_ins_table[n-1].m_issue_time==0)
+            return false;
+        if(m_ins_table[n-1].m_issue_time >= m_now_cycle)
+            return false;
+    }
+
+    //判断是否存在WAW
+    REGISTER n_dst = n_ins->ins_dst;
+    for(int i = 0;i<n;i++){
+        if(m_ins_table[i].is_ex){
+            if(m_ins_table[i].one_ins->ins_dst == n_dst)
+                return false;
+        }
+    }
+
+
+
+   /* //判断是否有RAW
+     REGISTER m_src1 = m_ins_table[n].one_ins->ins_src1;
+     REGISTER m_src2 = m_ins_table[n].one_ins->ins_src2;
+
+    for(int i =0;i<n;i++){
+        REGISTER now_dst =  m_ins_table[i].one_ins->ins_dst;
+        if(now_dst==m_src1 || now_dst==m_src2){
+            if(m_now_cycle - m_ins_table[i].m_issue_time<=0)
+                return false;
+        }
+    }
+    */
+
+    //结构冒险
+    INS_OP m_op = n_ins->ins_op;
+
+    switch (m_op) {
+    case LD:
+        if(m_func_table->is_func_unit_valid(INTEGER)){
+           m_func_table->occupy_func_table_one(INTEGER,n_ins);
+           m_reg_status[n_dst] = INTEGER;
+           return true;
+        }
+
+        break;
+    case ST:
+        if(m_func_table->is_func_unit_valid(INTEGER)){
+           m_func_table->occupy_func_table_one(INTEGER,n_ins);
+           m_reg_status[n_dst] = INTEGER;
+           return true;
+        }
+
+        break;
+    case MULTD:
+        if(m_func_table->is_func_unit_valid(MULT1)){
+            m_func_table->occupy_func_table_one(MULT1,n_ins);
+            m_reg_status[n_dst] = MULT1;
+            return true;
+        }
+        else if(m_func_table->is_func_unit_valid(MULT2)){
+            m_func_table->occupy_func_table_one(MULT2,n_ins);
+            m_reg_status[n_dst] = MULT2;
+            return true;
+        }
+        break;
+    case DIVD:
+        if(m_func_table->is_func_unit_valid(DIVIDE1)){
+            m_func_table->occupy_func_table_one(DIVIDE1,n_ins);
+            m_reg_status[n_dst] = DIVIDE1;
+            return true;
+        }
+        break;
+    case ADDD:
+    case SUBD:
+        if(m_func_table->is_func_unit_valid(ADD1)){
+            m_func_table->occupy_func_table_one(ADD1,n_ins);
+            m_reg_status[n_dst] = ADD1;
+            return true;
+        }
+        else if(m_func_table->is_func_unit_valid(ADD2)){
+            m_func_table->occupy_func_table_one(ADD2,n_ins);
+            m_reg_status[n_dst] = ADD2;
+            return true;
+        }
+        break;
+    default:
+       return false;
+    }
+}
+
+//当前指令可否读操作数？无RAW
+bool INS_TIME_TABLE::n_th_ins_can_oc(int n){
+
+
+}
+
+

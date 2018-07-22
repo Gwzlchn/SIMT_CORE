@@ -6,6 +6,7 @@
 #include<map>
 #include<QString>
 #include<vector>
+#include"FunctionUnits.h"
 
 //唯一允许修改的，功能部件个数
 enum INS_OP{
@@ -68,13 +69,28 @@ public:
     INSTRUCTION *one_ins;
 
 
-
+    bool is_ex;
     int m_issue_time;
     int m_oc_time;
     int m_ex_time;
     int m_wb_time;
-    void go_to_next_cycle(bool );
+
 };
 
+class INS_TIME_TABLE{
+private:
+    //寄存器一共14个
+    std::vector<int> m_reg_status;
+    std::vector<INS_TIME_TALBE_ONE_LINE> m_ins_table;
+    FUNC_TABLE* m_func_table;
 
+public:
+
+    bool n_th_ins_can_issue(int n);
+    bool n_th_ins_can_oc(int n);
+    bool n_th_ins_can_wb(int n);
+    void go_to_next_cycle(bool );
+    //记录当前第n周期
+    int m_now_cycle;
+}
 #endif // INSTRUCTIONS_H
