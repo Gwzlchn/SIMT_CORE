@@ -8,7 +8,7 @@
 #include<vector>
 #include"FunctionUnits.h"
 
-//唯一允许修改的，功能部件个数
+
 enum INS_OP{
     LD ,ST,MULTD,SUBD,DIVD,ADDD
 };
@@ -63,6 +63,7 @@ public:
     int m_ex_time;
     int m_wb_time;
 
+    int m_extra_ex_time;
 
     INS_ONE_LINE(QString one_line);
     void print_one_ins_time();
@@ -73,23 +74,26 @@ public:
 
 };
 
-class INS_TIME_TABLE{
+class INS_ALL_PER_WARP{
 private:
     //寄存器一共14个
    vector<int> m_reg_status;
     std::vector<INS_ONE_LINE> m_ins_table;
     FUNC_TABLE* m_func_table;
+    int m_threads_per_warp;
 
 public:
-    INS_TIME_TABLE(QString file_name);
-
-    void read_all_ins_from_file(QString file_name);
-    bool n_th_ins_can_issue(int n);
-    bool n_th_ins_can_oc(int n);
-    bool n_th_ins_can_wb(int n);
-    void go_to_next_cycle();
+    bool m_is_issued;
+    //INS_ALL_PER_WARP(QString file_name);
+    bool is_all_ins_done();
+    INS_ALL_PER_WARP(QString file_name,int thread_per_warp);
+    void read_all_ins_from_file(QString file_name, int threads_pre_warp);
+    bool n_th_ins_can_issue(int n, int now_cycle);
+    bool n_th_ins_can_oc(int n, int now_cycle);
+    bool n_th_ins_can_wb(int n, int now_cycle);
+    void go_to_this_cycle(int now_cycle);
     void print_all_ins_table();
     //记录当前第n周期
-    int m_now_cycle;
+    //int m_now_cycle;
 };
 #endif // INSTRUCTIONS_H

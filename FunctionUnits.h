@@ -3,12 +3,17 @@
 
 
 #include<vector>
+#include<map>
+using std::map;
 using std::vector;
 struct INSTRUCTION;
 
+
+//唯一允许修改的，功能部件个数
 enum FUNC_UNIT{
     INTEGER=0,MULT1,MULT2,ADD1,ADD2,DIVIDE1
 };
+
 
 
 enum FUNC_UNIT_STATE{
@@ -30,6 +35,8 @@ public:
     void set_table_Rk(FUNC_UNIT now_func_unit,int to_set);
 
     void clear_func_one_line(FUNC_UNIT to_clr);
+
+    int get_extra_ex_time(FUNC_UNIT now_func_unit,int threads_per_warp);
 
 
 };

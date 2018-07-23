@@ -28,13 +28,15 @@ SOURCES += \
         mainwindow.cpp \
     I_Buffer.cpp \
     Instruction.cpp \
-    FunctionUnits.cpp
+    FunctionUnits.cpp \
+    WarpPool.cpp
 
 HEADERS += \
         mainwindow.h \
     I_Buffer.h \
     Instruction.h \
-    FunctionUnits.h
+    FunctionUnits.h \
+    WarpPool.h
 
 FORMS += \
         mainwindow.ui
