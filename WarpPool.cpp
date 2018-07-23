@@ -29,24 +29,32 @@ void WARP_POOL::launch_all_kernel(){
     qDebug()<<"INPUT ASM CODE FILE \t AND THREADS TO RUN"<<endl;
     QTextStream qtin(stdin);
     QString file_name = "ptx_ins.txt";
-    QString threads_str="64";
+    QString threads_str="32";
     //qtin >> file_name;
     //qtin >> threads_str;
     int threads = threads_str.toInt();
 
     int n_warp = int(ceil(threads / Threads_Per_Warp));
-    while(file_name.compare("end")!=0 &&  n_warp <= Warps_Per_Poll){
-        qDebug()<<threads;
 
-        launch_one_kernel(file_name,threads);
-        //qDebug()<<QString::fromUtf8("CONTINUE TO INPUT ASM CODE FILE \tend to stop \t AND THREADS TO RUN")<<endl;
-        //qtin >> file_name;
-        //qtin >> threads_str;
-        file_name="end";
-        threads = threads_str.toInt();
-        n_warp = int(ceil(threads / Threads_Per_Warp));
+    launch_one_kernel(file_name,threads);
 
-    }
+    file_name = "ptx_ins-1.txt";
+    launch_one_kernel(file_name,threads);
+
+
+
+//    while(file_name.compare("end")!=0 &&  n_warp <= Warps_Per_Poll){
+//        qDebug()<<threads;
+
+
+//        //qDebug()<<QString::fromUtf8("CONTINUE TO INPUT ASM CODE FILE \tend to stop \t AND THREADS TO RUN")<<endl;
+//        //qtin >> file_name;
+//        //qtin >> threads_str;
+//        file_name="end";
+//        threads = threads_str.toInt();
+//        n_warp = int(ceil(threads / Threads_Per_Warp));
+
+//    }
 }
 
 

@@ -407,6 +407,9 @@ bool INS_ALL_PER_WARP::n_th_ins_can_wb(int n,int now_cycle){
         return false;
     if(n_one_line.m_ex_time == now_cycle ||n_one_line.m_oc_time == now_cycle || n_one_line.m_issue_time == now_cycle)
         return false;
+
+
+
     REGISTER n_dst = n_ins->ins_dst;
     for(int i=0;i<n;i++){
         //之前指令源
