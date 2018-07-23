@@ -3,7 +3,7 @@
 
 
 map<FUNC_UNIT,int> FUNC_UNIT_CNT_MAP{
-    {INTEGER,16},{MULT1,8},{MULT2,16},{ADD1,32},{ADD2,16},{DIVIDE1,16}
+    {INTEGER,64},{MULT1,8},{MULT2,16},{ADD1,32},{ADD2,16},{DIVIDE1,16}
 };
 
 
@@ -61,6 +61,9 @@ void FUNC_TABLE::clear_func_one_line(FUNC_UNIT to_clr){
 
 
 int FUNC_TABLE::get_extra_ex_time(FUNC_UNIT now_func_unit, int threads_per_warp){
+    if(threads_per_warp == 0)
+        return 0;
+
     auto it = FUNC_UNIT_CNT_MAP.find(now_func_unit);
     int now_op_cnt = (*it).second;
     double extra_ex = (threads_per_warp / double(now_op_cnt))  -1;

@@ -1,6 +1,7 @@
 #include "Instruction.h"
 #include "FunctionUnits.h"
 #include<QFile>
+#include<QDebug>
 #include<QStringList>
 #include<QTextStream>
 #include<iostream>
@@ -25,7 +26,7 @@ std::map<INS_OP,std::string> INS_OP_MAP{
     {LD,"LD"},{ST,"ST"},{MULTD,"MULTD"},{SUBD,"SUBD"},{DIVD,"DIVD"},{ADDD,"ADDD"}
 };
 std::map<INS_OP,int> INS_EX_CYCLE{
-    {LD,2},{ST,4},{MULTD,20},{DIVD,40},{ADDD,2},{SUBD,10}
+    {LD,2},{ST,4},{MULTD,20},{DIVD,40},{ADDD,20},{SUBD,10}
 };
 
 
@@ -123,6 +124,7 @@ void INS_ONE_LINE::set_all_time(bool n_can_issue,bool n_can_oc,
     if((now_cycle - this->m_oc_time == this->m_one_ins->ins_cycle)&&
             (this->m_ex_time == 0) &&(this->m_oc_time!=0)){
         this->m_ex_time = now_cycle;
+        return;
     }
     if(n_can_wb && this->m_wb_time == 0 && this->m_ex_time!=0){
         this->m_wb_time = now_cycle;
@@ -136,18 +138,18 @@ void INS_ONE_LINE::set_all_time(bool n_can_issue,bool n_can_oc,
 
 
 
-INS_ALL_PER_WARP::INS_ALL_PER_WARP(QString file_name,int threads_pre_warp){
-    this->read_all_ins_from_file(file_name,threads_pre_warp);
-    this->m_func_table = new FUNC_TABLE();
+INS_ALL_PER_WARP::INS_ALL_PER_WARP(QString file_name, int threads_pre_warp, FUNC_TABLE *func_in_pool){
+    this->read_all_ins_from_file(file_name);
+    this->m_func_table = func_in_pool;
     this->m_reg_status =  vector<int>(14);
     //this->m_now_cycle = 1;
-    this->m_threads_per_warp = threads_pre_warp;
+    this->m_active_threads_this_warp = threads_pre_warp;
     this->m_is_issued = false;
 }
 
 
 
-void INS_ALL_PER_WARP::read_all_ins_from_file(QString file_name,int threads_pre_warp){
+void INS_ALL_PER_WARP::read_all_ins_from_file(QString file_name){
     QFile file(file_name);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
@@ -162,18 +164,58 @@ void INS_ALL_PER_WARP::read_all_ins_from_file(QString file_name,int threads_pre_
     file.close();
 }
 
+
+int INS_ALL_PER_WARP::active_threads_this_warp() const
+{
+    return m_active_threads_this_warp;
+}
+
+void INS_ALL_PER_WARP::setActive_threads_this_warp(int active_threads_this_warp)
+{
+    m_active_threads_this_warp = active_threads_this_warp;
+}
+
+
 //所有指令均执行完
 bool INS_ALL_PER_WARP::is_all_ins_done(){
-    bool flag = false;
+
     for(int j = 0;j<m_ins_table.size();j++){
         if(m_ins_table[j].m_wb_time == 0){
+            return false;
+        }
+    }
+    return true;
+
+}
+
+
+
+
+
+bool INS_ALL_PER_WARP::is_all_ins_issued(){
+    bool flag = false;
+    for(int j = 0;j<m_ins_table.size();j++){
+        if(m_ins_table[j].m_issue_time == 0){
             break;
         }
         flag = true;
     }
     return flag;
-
 }
+
+bool INS_ALL_PER_WARP::have_issued_not_wb(){
+    bool flag = true;
+    for(int j = 0;j<m_ins_table.size();j++){
+        if(m_ins_table[j].m_issue_time != 0 && m_ins_table[j].m_wb_time == 0){
+            break;
+        }
+        flag = false;
+    }
+    return flag;
+}
+
+
+
 
 //指令从0开始计数！
 //当前指令可否流出？无结构冒险，无WAW
@@ -238,7 +280,8 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle){
             m_reg_status[n_dst] = INTEGER;
             m_ins_table[n].m_func_unit = INTEGER;
 
-            n_ins->ins_cycle += m_func_table->get_extra_ex_time(INTEGER,m_threads_per_warp);
+            n_ins->ins_cycle += m_func_table->get_extra_ex_time(INTEGER,m_active_threads_this_warp);
+
             return true;
         }
 
@@ -248,14 +291,14 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle){
             m_func_table->occupy_func_table_one(MULT1,n_ins);
             m_reg_status[n_dst] = MULT1;
             m_ins_table[n].m_func_unit = MULT1;
-            //n_ins->ins_cycle += m_func_table->get_extra_ex_time(MULT1,m_threads_per_warp);
+            n_ins->ins_cycle += m_func_table->get_extra_ex_time(MULT1,m_active_threads_this_warp);
             return true;
         }
         else if(m_func_table->is_func_unit_valid(MULT2)){
             m_func_table->occupy_func_table_one(MULT2,n_ins);
             m_reg_status[n_dst] = MULT2;
             m_ins_table[n].m_func_unit =  MULT2;
-            //n_ins->ins_cycle += m_func_table->get_extra_ex_time(MULT2,m_threads_per_warp);
+            n_ins->ins_cycle += m_func_table->get_extra_ex_time(MULT2,m_active_threads_this_warp);
             return true;
         }
         break;
@@ -264,7 +307,7 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle){
             m_func_table->occupy_func_table_one(DIVIDE1,n_ins);
             m_reg_status[n_dst] = DIVIDE1;
             m_ins_table[n].m_func_unit = DIVIDE1;
-            //n_ins->ins_cycle += m_func_table->get_extra_ex_time(DIVIDE1,m_threads_per_warp);
+            n_ins->ins_cycle += m_func_table->get_extra_ex_time(DIVIDE1,m_active_threads_this_warp);
             return true;
         }
         break;
@@ -274,14 +317,14 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle){
             m_func_table->occupy_func_table_one(ADD1,n_ins);
             m_reg_status[n_dst] = ADD1;
             m_ins_table[n].m_func_unit = ADD1;
-            //n_ins->ins_cycle += m_func_table->get_extra_ex_time(ADD1,m_threads_per_warp);
+            n_ins->ins_cycle += m_func_table->get_extra_ex_time(ADD1,m_active_threads_this_warp);
             return true;
         }
         else if(m_func_table->is_func_unit_valid(ADD2)){
             m_func_table->occupy_func_table_one(ADD2,n_ins);
             m_reg_status[n_dst] = ADD2;
             m_ins_table[n].m_func_unit = ADD2;
-            //n_ins->ins_cycle += m_func_table->get_extra_ex_time(ADD2,m_threads_per_warp);
+            n_ins->ins_cycle += m_func_table->get_extra_ex_time(ADD2,m_active_threads_this_warp);
             return true;
         }
         break;
@@ -301,7 +344,7 @@ bool INS_ALL_PER_WARP::n_th_ins_can_oc(int n,int now_cycle){
     INSTRUCTION* n_ins = m_ins_table[n].m_one_ins;
     INS_ONE_LINE n_ins_line = m_ins_table[n];
     //未流出
-    if(n_ins_line.m_issue_time == 0){
+    if(n_ins_line.m_issue_time == 0 || n_ins_line.m_issue_time == now_cycle){
         return false;
     }
     //本条指令已收集数
@@ -362,6 +405,8 @@ bool INS_ALL_PER_WARP::n_th_ins_can_wb(int n,int now_cycle){
     INS_ONE_LINE n_one_line = m_ins_table[n];
     if(n_one_line.m_ex_time == 0 ||n_one_line.m_oc_time == 0 || n_one_line.m_issue_time == 0)
         return false;
+    if(n_one_line.m_ex_time == now_cycle ||n_one_line.m_oc_time == now_cycle || n_one_line.m_issue_time == now_cycle)
+        return false;
     REGISTER n_dst = n_ins->ins_dst;
     for(int i=0;i<n;i++){
         //之前指令源
@@ -385,20 +430,14 @@ void INS_ALL_PER_WARP::go_to_this_cycle(int now_cycle){
         if(!m_is_issued && i_ins_can_is){
             m_is_issued = true;
         }
-        bool i_ins_can_oc =n_th_ins_can_oc(i,now_cycle);
+        bool i_ins_can_oc = n_th_ins_can_oc(i,now_cycle);
         bool i_ins_can_wb = n_th_ins_can_wb(i,now_cycle);
         m_ins_table[i].set_all_time(i_ins_can_is,i_ins_can_oc,i_ins_can_wb,now_cycle);
 
 
     }
 
-    for(int i = 0;i<m_ins_table.size();i++){
-        if(m_ins_table[i].m_wb_time!=0){
-            m_func_table->clear_func_one_line(m_ins_table[i].m_func_unit);
-            m_ins_table[i].m_is_ex = false;
-        }
 
-    }
 
 
 
@@ -413,8 +452,8 @@ void INS_ALL_PER_WARP::go_to_this_cycle(int now_cycle){
         */
 
 
-        //std::cout<<"now_CYCLE:"<<now_cycle<<"  ISSUED?\t"<<m_is_issued<<std::endl;
-        //this->print_all_ins_table();
+        std::cout<<"now_CYCLE:"<<now_cycle<<"  ISSUED?\t"<<m_is_issued<<std::endl;
+        this->print_all_ins_table();
        // ++now_cycle;
 
 
@@ -426,6 +465,18 @@ void INS_ALL_PER_WARP::go_to_this_cycle(int now_cycle){
 
     //}
 }
+
+
+void INS_ALL_PER_WARP::clear_func_table(int now_cycles){
+    for(int i = 0;i<m_ins_table.size();i++){
+        if(m_ins_table[i].m_wb_time!=0 &&(now_cycles -1 ==m_ins_table[i].m_wb_time ) ){
+            m_func_table->clear_func_one_line(m_ins_table[i].m_func_unit);
+            m_ins_table[i].m_is_ex = false;
+        }
+
+    }
+}
+
 
 
 void INS_ALL_PER_WARP::print_all_ins_table(){

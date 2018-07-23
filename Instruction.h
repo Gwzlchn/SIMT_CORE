@@ -80,14 +80,18 @@ private:
    vector<int> m_reg_status;
     std::vector<INS_ONE_LINE> m_ins_table;
     FUNC_TABLE* m_func_table;
-    int m_threads_per_warp;
+    int m_active_threads_this_warp;
 
 public:
+
+     INS_ALL_PER_WARP(QString file_name,int thread_per_warp,FUNC_TABLE* func_in_pool);
     bool m_is_issued;
     //INS_ALL_PER_WARP(QString file_name);
     bool is_all_ins_done();
-    INS_ALL_PER_WARP(QString file_name,int thread_per_warp);
-    void read_all_ins_from_file(QString file_name, int threads_pre_warp);
+    bool is_all_ins_issued();
+    bool have_issued_not_wb();
+
+    void read_all_ins_from_file(QString file_name);
     bool n_th_ins_can_issue(int n, int now_cycle);
     bool n_th_ins_can_oc(int n, int now_cycle);
     bool n_th_ins_can_wb(int n, int now_cycle);
@@ -95,5 +99,9 @@ public:
     void print_all_ins_table();
     //记录当前第n周期
     //int m_now_cycle;
+    //
+    void clear_func_table(int now_cycles);
+    int active_threads_this_warp() const;
+    void setActive_threads_this_warp(int active_threads_this_warp);
 };
 #endif // INSTRUCTIONS_H
