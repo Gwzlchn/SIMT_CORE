@@ -442,7 +442,7 @@ void INS_ALL_PER_WARP::go_to_this_cycle(int now_cycle){
 
 
     }
-   std::cout<<m_ins_table[2].m_issue_time<<std::endl;
+   //std::cout<<m_ins_table[2].m_issue_time<<std::endl;
     //Q_ASSERT(m_ins_table[1].m_issue_time==0);
 
 
@@ -460,8 +460,6 @@ void INS_ALL_PER_WARP::go_to_this_cycle(int now_cycle){
         std::cout<<"now_CYCLE:"<<now_cycle<<"  ISSUED?\t"<<m_is_issued<<std::endl;
         this->print_all_ins_table();
        // ++now_cycle;
-
-
 
 
 
