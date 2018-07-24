@@ -26,7 +26,7 @@ std::map<INS_OP,std::string> INS_OP_MAP{
     {LD,"LD"},{ST,"ST"},{MULTD,"MULTD"},{SUBD,"SUBD"},{DIVD,"DIVD"},{ADDD,"ADDD"}
 };
 std::map<INS_OP,int> INS_EX_CYCLE{
-    {LD,2},{ST,4},{MULTD,20},{DIVD,40},{ADDD,20},{SUBD,10}
+    {LD,2},{ST,4},{MULTD,20},{DIVD,40},{ADDD,1},{SUBD,10}
 };
 
 
@@ -85,7 +85,7 @@ void INSTRUCTION::set_one_ins(std::string one_ins_op, std::string one_ins_dst, s
     ins_cycle = (*it3).second;
 }
 
-void INSTRUCTION::print_one_ins(){
+void INSTRUCTION::print_one_ins() const{
     std::cout<<"ENUM type: " <<" OP "<<ins_op <<"\tCYCLES:"<<ins_cycle<<"\tdst:"<<ins_dst<<"\tsrc1:"<<ins_src1<<"\tsrc2:"<<ins_src2<<"\t";
 }
 
@@ -102,7 +102,7 @@ INS_ONE_LINE::INS_ONE_LINE(QString one_line){
 
 
 
-void INS_ONE_LINE::print_one_ins_time(){
+void INS_ONE_LINE::print_one_ins_time() const{
     m_one_ins->print_one_ins();
     cout<<"ISSUE TIME: "<<m_issue_time<<"\t OC TIME:"<<m_oc_time<<"\t EX TIME: "<<m_ex_time
        <<"\tWB TIME: "<<m_wb_time<<endl;
@@ -112,6 +112,9 @@ void INS_ONE_LINE::print_one_ins_time(){
 
 void INS_ONE_LINE::set_all_time(bool n_can_issue,bool n_can_oc,
                                 bool n_can_wb,int now_cycle){
+    if(!(n_can_issue||n_can_oc||n_can_wb))
+        return;
+
     if(n_can_issue && this->m_issue_time == 0){
         this->m_issue_time = now_cycle;
         return;
@@ -138,7 +141,7 @@ void INS_ONE_LINE::set_all_time(bool n_can_issue,bool n_can_oc,
 
 
 
-INS_ALL_PER_WARP::INS_ALL_PER_WARP(QString file_name, int threads_pre_warp, FUNC_TABLE *func_in_pool){
+INS_ALL_PER_WARP::INS_ALL_PER_WARP(const QString &file_name, int threads_pre_warp, FUNC_TABLE *func_in_pool){
     this->read_all_ins_from_file(file_name);
     this->m_func_table = func_in_pool;
     this->m_reg_status =  vector<int>(14);
@@ -177,7 +180,7 @@ void INS_ALL_PER_WARP::setActive_threads_this_warp(int active_threads_this_warp)
 
 
 //所有指令均执行完
-bool INS_ALL_PER_WARP::is_all_ins_done(){
+bool INS_ALL_PER_WARP::is_all_ins_done() const{
 
     for(int j = 0;j<m_ins_table.size();j++){
         if(m_ins_table[j].m_wb_time == 0){
@@ -192,7 +195,7 @@ bool INS_ALL_PER_WARP::is_all_ins_done(){
 
 
 
-bool INS_ALL_PER_WARP::is_all_ins_issued(){
+bool INS_ALL_PER_WARP::is_all_ins_issued() const{
     bool flag = false;
     for(int j = 0;j<m_ins_table.size();j++){
         if(m_ins_table[j].m_issue_time == 0){
@@ -203,7 +206,7 @@ bool INS_ALL_PER_WARP::is_all_ins_issued(){
     return flag;
 }
 
-bool INS_ALL_PER_WARP::have_issued_not_wb(){
+bool INS_ALL_PER_WARP::have_issued_not_wb() const{
     bool flag = true;
     for(int j = 0;j<m_ins_table.size();j++){
         if(m_ins_table[j].m_issue_time != 0 && m_ins_table[j].m_wb_time == 0){
@@ -219,7 +222,7 @@ bool INS_ALL_PER_WARP::have_issued_not_wb(){
 
 //指令从0开始计数！
 //当前指令可否流出？无结构冒险，无WAW
-bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle){
+bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle) const{
 
 
     //越界
@@ -230,7 +233,7 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle){
     INSTRUCTION* n_ins = m_ins_table[n].m_one_ins;
 
     //本条指令已流出
-    int& n_is_time = m_ins_table[n].m_issue_time;
+    int n_is_time = m_ins_table[n].m_issue_time;
     if(n_is_time !=0){
         return false;
     }
@@ -277,7 +280,7 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle){
     case ST:
         if(m_func_table->is_func_unit_valid(INTEGER)){
             m_func_table->occupy_func_table_one(INTEGER,n_ins);
-            m_reg_status[n_dst] = INTEGER;
+            //m_reg_status[n_dst] = INTEGER;
             m_ins_table[n].m_func_unit = INTEGER;
 
             n_ins->ins_cycle += m_func_table->get_extra_ex_time(INTEGER,m_active_threads_this_warp);
@@ -289,14 +292,14 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle){
     case MULTD:
         if(m_func_table->is_func_unit_valid(MULT1)){
             m_func_table->occupy_func_table_one(MULT1,n_ins);
-            m_reg_status[n_dst] = MULT1;
+            //m_reg_status[n_dst] = MULT1;
             m_ins_table[n].m_func_unit = MULT1;
             n_ins->ins_cycle += m_func_table->get_extra_ex_time(MULT1,m_active_threads_this_warp);
             return true;
         }
         else if(m_func_table->is_func_unit_valid(MULT2)){
             m_func_table->occupy_func_table_one(MULT2,n_ins);
-            m_reg_status[n_dst] = MULT2;
+            //m_reg_status[n_dst] = MULT2;
             m_ins_table[n].m_func_unit =  MULT2;
             n_ins->ins_cycle += m_func_table->get_extra_ex_time(MULT2,m_active_threads_this_warp);
             return true;
@@ -305,7 +308,7 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle){
     case DIVD:
         if(m_func_table->is_func_unit_valid(DIVIDE1)){
             m_func_table->occupy_func_table_one(DIVIDE1,n_ins);
-            m_reg_status[n_dst] = DIVIDE1;
+           // m_reg_status[n_dst] = DIVIDE1;
             m_ins_table[n].m_func_unit = DIVIDE1;
             n_ins->ins_cycle += m_func_table->get_extra_ex_time(DIVIDE1,m_active_threads_this_warp);
             return true;
@@ -315,14 +318,14 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle){
     case SUBD:
         if(m_func_table->is_func_unit_valid(ADD1)){
             m_func_table->occupy_func_table_one(ADD1,n_ins);
-            m_reg_status[n_dst] = ADD1;
+            //m_reg_status[n_dst] = ADD1;
             m_ins_table[n].m_func_unit = ADD1;
             n_ins->ins_cycle += m_func_table->get_extra_ex_time(ADD1,m_active_threads_this_warp);
             return true;
         }
         else if(m_func_table->is_func_unit_valid(ADD2)){
             m_func_table->occupy_func_table_one(ADD2,n_ins);
-            m_reg_status[n_dst] = ADD2;
+            //m_reg_status[n_dst] = ADD2;
             m_ins_table[n].m_func_unit = ADD2;
             n_ins->ins_cycle += m_func_table->get_extra_ex_time(ADD2,m_active_threads_this_warp);
             return true;
@@ -335,7 +338,7 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle){
 }
 
 //当前指令可否读操作数？无RAW
-bool INS_ALL_PER_WARP::n_th_ins_can_oc(int n,int now_cycle){
+bool INS_ALL_PER_WARP::n_th_ins_can_oc(int n,int now_cycle) const{
     //越界
     if (n>=m_ins_table.size())
         return false;
@@ -348,7 +351,7 @@ bool INS_ALL_PER_WARP::n_th_ins_can_oc(int n,int now_cycle){
         return false;
     }
     //本条指令已收集数
-    int& n_oc_time = m_ins_table[n].m_oc_time;
+    int n_oc_time = m_ins_table[n].m_oc_time;
     if(n_oc_time !=0){
         return false;
     }
@@ -395,7 +398,7 @@ bool INS_ALL_PER_WARP::n_th_ins_can_oc(int n,int now_cycle){
 
 
 //能否写回
-bool INS_ALL_PER_WARP::n_th_ins_can_wb(int n,int now_cycle){
+bool INS_ALL_PER_WARP::n_th_ins_can_wb(int n,int now_cycle) const{
     //越界
     if (n>=m_ins_table.size())
         return false;
@@ -430,7 +433,7 @@ void INS_ALL_PER_WARP::go_to_this_cycle(int now_cycle){
     m_is_issued = false;
     for(int i = 0;i<m_ins_table.size();i++){
         bool i_ins_can_is = n_th_ins_can_issue(i,now_cycle);
-        if(!m_is_issued && i_ins_can_is){
+        if( i_ins_can_is){
             m_is_issued = true;
         }
         bool i_ins_can_oc = n_th_ins_can_oc(i,now_cycle);
@@ -439,9 +442,8 @@ void INS_ALL_PER_WARP::go_to_this_cycle(int now_cycle){
 
 
     }
-
-
-
+   std::cout<<m_ins_table[2].m_issue_time<<std::endl;
+    //Q_ASSERT(m_ins_table[1].m_issue_time==0);
 
 
        /*
@@ -472,7 +474,7 @@ void INS_ALL_PER_WARP::go_to_this_cycle(int now_cycle){
 
 void INS_ALL_PER_WARP::clear_func_table(int now_cycles){
     for(int i = 0;i<m_ins_table.size();i++){
-        if(m_ins_table[i].m_wb_time!=0 &&(now_cycles -1 ==m_ins_table[i].m_wb_time ) ){
+        if(m_ins_table[i].m_wb_time!=0 &&(now_cycles -1 == m_ins_table[i].m_wb_time ) ){
             m_func_table->clear_func_one_line(m_ins_table[i].m_func_unit);
             m_ins_table[i].m_is_ex = false;
         }
@@ -482,7 +484,7 @@ void INS_ALL_PER_WARP::clear_func_table(int now_cycles){
 
 
 
-void INS_ALL_PER_WARP::print_all_ins_table(){
+void INS_ALL_PER_WARP::print_all_ins_table() const{
     for(INS_ONE_LINE one_line : m_ins_table){
         one_line.print_one_ins_time();
     }

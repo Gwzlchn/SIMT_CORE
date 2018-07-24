@@ -32,7 +32,7 @@ public:
     int launch_one_kernel(QString ins_file_name,int threads);
     void launch_all_kernel();
     void run_in_one_Cycle();
-    bool is_all_warps_done();
+    bool is_all_warps_done() const;
 
 };
 

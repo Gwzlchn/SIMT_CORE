@@ -36,7 +36,7 @@ void WARP_POOL::launch_all_kernel(){
 
     int n_warp = int(ceil(threads / Threads_Per_Warp));
 
-    launch_one_kernel(file_name,threads);
+    //launch_one_kernel(file_name,threads);
 
     file_name = "ptx_ins-1.txt";
     launch_one_kernel(file_name,threads);
@@ -81,7 +81,7 @@ int WARP_POOL::launch_one_kernel(QString ins_file_name, int threads){
 
 
 
-bool WARP_POOL::is_all_warps_done(){
+bool WARP_POOL::is_all_warps_done() const{
 
     for(int i=0;i<m_all_warps_ins.size();i++){
         if(!m_all_warps_ins[i].is_all_ins_done()){
@@ -123,7 +123,7 @@ void WARP_POOL::run_in_one_Cycle(){
 
     std::vector<INS_ALL_PER_WARP>::iterator temp_iter = m_now_iter;
     for(;m_now_iter!=m_all_warps_ins.end();m_now_iter++){
-        if(this_cycle_issued<=Can_Issue_Meantime){
+        if(this_cycle_issued<Can_Issue_Meantime){
             m_now_iter->go_to_this_cycle(m_Cycle);
             if(m_now_iter->m_is_issued)
                 this_cycle_issued++;
@@ -134,7 +134,7 @@ void WARP_POOL::run_in_one_Cycle(){
     }
     m_now_iter = m_all_warps_ins.begin();
     for(;m_now_iter!=temp_iter;m_now_iter++){
-        if(this_cycle_issued<=Can_Issue_Meantime){
+        if(this_cycle_issued<Can_Issue_Meantime){
             m_now_iter->go_to_this_cycle(m_Cycle);
             if(m_now_iter->m_is_issued)
                 this_cycle_issued++;
