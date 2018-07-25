@@ -58,6 +58,7 @@ public:
     INSTRUCTION *m_one_ins;
     mutable FUNC_UNIT m_func_unit;
     bool m_is_ex;
+	bool is_active() const ;
     int m_issue_time;
     int m_oc_time;
     int m_ex_time;

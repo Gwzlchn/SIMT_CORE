@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 
 
 	WARP_POOL* pool = new WARP_POOL({
-		{"ptx_ins-1.txt",32} });
+		{"ptx_ins.txt",32} });
     pool->run_all_warp();
 
     return 0;

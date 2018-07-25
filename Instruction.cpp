@@ -90,6 +90,13 @@ void INSTRUCTION::print_one_ins() const{
 }
 
 
+bool INS_ONE_LINE::is_active() const
+{
+	if ((this->m_issue_time != 0 && this->m_wb_time == 0) || this->m_is_ex)
+		return true;
+	return false;
+}
+
 INS_ONE_LINE::INS_ONE_LINE(QString one_line){
     m_one_ins = new INSTRUCTION(one_line);
     m_is_ex = false;
@@ -195,25 +202,22 @@ bool INS_ALL_PER_WARP::is_all_ins_done() const{
 
 
 bool INS_ALL_PER_WARP::is_all_ins_issued() const{
-    bool flag = false;
+
     for(int j = 0;j<m_ins_table.size();j++){
         if(m_ins_table[j].m_issue_time == 0){
-            break;
+			return false;
         }
-        flag = true;
     }
-    return flag;
+    return true;
 }
 
 bool INS_ALL_PER_WARP::have_issued_not_wb() const{
-    bool flag = true;
+
     for(int j = 0;j<m_ins_table.size();j++){
-        if(m_ins_table[j].m_issue_time != 0 && m_ins_table[j].m_wb_time == 0){
-            break;
-        }
-        flag = false;
+        if(m_ins_table[j].m_issue_time != 0 && m_ins_table[j].m_wb_time == 0)
+			return true;
     }
-    return flag;
+	return false;
 }
 
 
@@ -249,8 +253,7 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle) const{
     //判断是否存在WAW
     REGISTER n_dst = m_ins_table[n].m_one_ins->ins_dst;
     for(int i = 0;i<n;i++){
-        bool ins_active = (m_ins_table[i].m_issue_time!=0&&m_ins_table[i].m_wb_time == 0)||m_ins_table[i].m_is_ex;
-        if(ins_active){
+        if(m_ins_table[i].is_active()){
             if(m_ins_table[i].m_one_ins->ins_dst ==  n_dst)
                 return false;
         }
@@ -365,11 +368,12 @@ bool INS_ALL_PER_WARP::n_th_ins_can_oc(int n,int now_cycle) const{
     //当前指令源寄存器
     REGISTER n_src1 = m_ins_table[n].m_one_ins->ins_src1;
     REGISTER n_src2 = m_ins_table[n].m_one_ins->ins_src2;
+	bool n_can_oc = false;
     for(int i=0;i<n;i++){
         REGISTER i_dst = m_ins_table[i].m_one_ins->ins_dst;
-        if(m_ins_table[i].m_is_ex){
-            if(!(i_dst == n_src1 || i_dst==n_src2))
-                return true;
+        if(m_ins_table[i].is_active()){
+            if((i_dst == n_src1 || i_dst==n_src2))
+                return false;
             if(i_dst == n_src1 || i_dst==n_src2 || n_func_Rj==0||n_func_Rk==0){
                 return false;
             }

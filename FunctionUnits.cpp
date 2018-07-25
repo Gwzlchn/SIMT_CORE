@@ -53,7 +53,13 @@ void FUNC_TABLE::set_table_Rk(FUNC_UNIT now_func_unit,int to_set){
 
 
 void FUNC_TABLE::clear_func_one_line(FUNC_UNIT to_clr){
-    m_func_table[to_clr][Busy] = 0;
+	m_func_table[to_clr][Busy] = 0;
+	m_func_table[to_clr][Op] = 0;
+	m_func_table[to_clr][Fi] = 0;
+	m_func_table[to_clr][Fj] = 0;
+	m_func_table[to_clr][Fk] = 0;
+	m_func_table[to_clr][Rj] = 0;
+	m_func_table[to_clr][Rk] = 0;
     return;
 }
 
