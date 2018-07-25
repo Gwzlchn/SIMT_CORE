@@ -112,8 +112,7 @@ void INS_ONE_LINE::print_one_ins_time() const{
 
 void INS_ONE_LINE::set_all_time(bool n_can_issue,bool n_can_oc,
                                 bool n_can_wb,int now_cycle){
-    if(!(n_can_issue||n_can_oc||n_can_wb))
-        return;
+   
 
     if(n_can_issue && this->m_issue_time == 0){
         this->m_issue_time = now_cycle;
@@ -436,10 +435,11 @@ void INS_ALL_PER_WARP::go_to_this_cycle(int now_cycle){
         if( i_ins_can_is){
             m_is_issued = true;
         }
+		//cout << "m_is_issued = true;" << endl;
         bool i_ins_can_oc = n_th_ins_can_oc(i,now_cycle);
         bool i_ins_can_wb = n_th_ins_can_wb(i,now_cycle);
         m_ins_table[i].set_all_time(i_ins_can_is,i_ins_can_oc,i_ins_can_wb,now_cycle);
-
+		int* a = &(this)->m_ins_table[1].m_issue_time;
 
     }
    //std::cout<<m_ins_table[2].m_issue_time<<std::endl;

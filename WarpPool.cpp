@@ -36,7 +36,7 @@ void WARP_POOL::launch_all_kernel(){
 
     int n_warp = int(ceil(threads / Threads_Per_Warp));
 
-    //launch_one_kernel(file_name,threads);
+    launch_one_kernel(file_name,threads);
 
     file_name = "ptx_ins-1.txt";
     launch_one_kernel(file_name,threads);
@@ -112,9 +112,9 @@ void WARP_POOL::run_all_warp(){
 
 void WARP_POOL::run_in_one_Cycle(){
     //已流出的，必走下一个周期
-    for(INS_ALL_PER_WARP issued : m_all_warps_ins){
-        if(issued.have_issued_not_wb())
-            issued.go_to_this_cycle(m_Cycle);
+	for (int i = 0; i < m_all_warps_ins.size(); i++) {
+        if(m_all_warps_ins[i].have_issued_not_wb())
+			m_all_warps_ins[i].go_to_this_cycle(m_Cycle);
     }
 
     //未流出的，循环优先级决定谁流出
