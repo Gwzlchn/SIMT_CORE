@@ -19,9 +19,7 @@ std::map<REGISTER,std::string> REGISTER_MAP{
     {R1,"R1"},{R2,"R2"},{R3,"R3"},{R4,"R4"}
 };
 
-std::map<STAGE,std::string> STAGE_MAP{
-    {IS,"IS"},{OC,"OC"},{EX,"EX"},{WB,"WB"}
-};
+
 std::map<INS_OP,std::string> INS_OP_MAP{
     {LD,"LD"},{ST,"ST"},{MULTD,"MULTD"},{SUBD,"SUBD"},{DIVD,"DIVD"},{ADDD,"ADDD"}
 };
@@ -80,10 +78,20 @@ void INSTRUCTION::set_one_ins(std::string one_ins_op, std::string one_ins_dst, s
 
     auto it3 =INS_EX_CYCLE.find(ins_op);
     ins_cycle = (*it3).second;
+
+
+	//为了好看
+	ins_op_str = one_ins_op;
+	ins_dst_str = one_ins_dst;
+	ins_src1_str = one_ins_src1;
+	ins_src2_str = one_ins_src2;
+
+
+
 }
 
 void INSTRUCTION::print_one_ins() const{
-    std::cout<<"ENUM type: " <<" OP "<<ins_op <<"\tCYCLES:"<<ins_cycle<<"\tdst:"<<ins_dst<<"\tsrc1:"<<ins_src1<<"\tsrc2:"<<ins_src2<<"\t";
+    std::cout<<"ENUM type: " <<" OP "<<ins_op_str <<"\tCYCLES:"<<ins_cycle<<"\tdst:"<<ins_dst_str<<"\tsrc1:"<<ins_src1_str<<"\tsrc2:"<<ins_src2_str<<"\t";
 }
 
 
@@ -433,47 +441,24 @@ bool INS_ALL_PER_WARP::n_th_ins_can_wb(int n,int now_cycle) const{
 
 
 void INS_ALL_PER_WARP::go_to_this_cycle(int now_cycle){
-    //bool next_flag = true;
-    //while(next_flag){
+   
     m_is_issued = false;
     for(int i = 0;i<m_ins_table.size();i++){
         bool i_ins_can_is = n_th_ins_can_issue(i,now_cycle);
         if( i_ins_can_is){
             m_is_issued = true;
         }
-		//cout << "m_is_issued = true;" << endl;
         bool i_ins_can_oc = n_th_ins_can_oc(i,now_cycle);
         bool i_ins_can_wb = n_th_ins_can_wb(i,now_cycle);
         m_ins_table[i].set_all_time(i_ins_can_is,i_ins_can_oc,i_ins_can_wb,now_cycle);
 		int* a = &(this)->m_ins_table[1].m_issue_time;
 
     }
-   //std::cout<<m_ins_table[2].m_issue_time<<std::endl;
-    //Q_ASSERT(m_ins_table[1].m_issue_time==0);
-
-
-       /*
-        for(int j = 0;j<m_ins_table.size();j++){
-            if(m_ins_table[j].m_wb_time == 0){
-                next_flag = true;
-                break;
-            }
-            next_flag = false;
-        }
-        */
 
 
         std::cout<<"now_CYCLE:"<<now_cycle<<"  ISSUED?\t"<<m_is_issued<<std::endl;
         this->print_all_ins_table();
-		//this->m_func_table->print_func_table_busy_bit();
-       // ++now_cycle;
-
-
-
-
-
-
-    //}
+	
 }
 
 

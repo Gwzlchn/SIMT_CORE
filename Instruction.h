@@ -23,10 +23,6 @@ enum REGISTER{
 
 extern std::map<REGISTER,std::string> REGISTER_MAP;
 
-enum STAGE{
-    IS ,OC,EX,WB
-};
-extern std::map<STAGE,std::string> STAGE_MAP;
 
 
 
@@ -44,7 +40,7 @@ struct INSTRUCTION
     REGISTER ins_dst;
     REGISTER ins_src1;
     REGISTER ins_src2;
-
+	std::string ins_op_str, ins_dst_str, ins_src1_str, ins_src2_str;
     INSTRUCTION(QString one_ins);
     void set_one_ins(std::string one_ins_op,std::string one_ins_dst,std::string one_ins_src1,std::string one_ins_src2);
     void print_one_ins() const;

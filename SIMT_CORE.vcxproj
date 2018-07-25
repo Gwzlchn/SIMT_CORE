@@ -189,6 +189,7 @@
     <ClCompile Include="mainwindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BetterEnum.h" />
     <ClInclude Include="FunctionUnits.h" />
     <ClInclude Include="I_Buffer.h" />
     <ClInclude Include="Instruction.h" />
