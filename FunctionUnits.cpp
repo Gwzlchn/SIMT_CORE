@@ -1,6 +1,6 @@
 #include "FunctionUnits.h"
 #include"Instruction.h"
-
+#include<iostream>
 
 map<FUNC_UNIT,int> FUNC_UNIT_CNT_MAP{
     {INTEGER,32},{MULT1,8},{MULT2,16},{ADD1,32},{ADD2,16},{DIVIDE1,16}
@@ -11,6 +11,14 @@ FUNC_TABLE:: FUNC_TABLE(){
    m_func_table = vector<vector<int>>(6,vector<int>(9));
 }
 
+
+void FUNC_TABLE::print_func_table_busy_bit()
+{
+	for (auto iter = m_func_table.begin(); iter != m_func_table.end(); iter++) {
+		std::cout << (*iter)[Busy] << "\t";
+	}
+	std::cout << std::endl;
+}
 
 bool FUNC_TABLE::is_func_unit_valid(FUNC_UNIT now_op){
     if(m_func_table[now_op][Busy] == 0)

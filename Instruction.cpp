@@ -39,10 +39,7 @@ INSTRUCTION::INSTRUCTION(QString one_ins)
     std::string ins_dst_str =  one_ins.section(' ',1,1).section(',',0,0).toStdString();
     std::string ins_src1_str = one_ins.section(' ',1,1).section(',',1,1).toStdString();
     std::string ins_src2_str =one_ins.section(' ',1,1).section(',',2,2).toStdString();
-    /* ins_dst = R4;
-    ins_src1 = R4;
-    ins_src2 = R4;
-    ins_op = MULTD;*/
+    
     this->set_one_ins(ins_op_str,ins_dst_str,ins_src1_str,ins_src2_str);
 }
 
@@ -139,6 +136,11 @@ void INS_ONE_LINE::set_all_time(bool n_can_issue,bool n_can_oc,
         this->m_wb_time = now_cycle;
         return;
     }
+}
+
+FUNC_TRUE_ALL INS_ONE_LINE::get_cycles_occ_func_unit()
+{
+	return{ m_func_unit,{m_one_ins->ins_cycle,m_wb_time - m_issue_time + 1} };
 }
 
 
@@ -463,6 +465,7 @@ void INS_ALL_PER_WARP::go_to_this_cycle(int now_cycle){
 
         std::cout<<"now_CYCLE:"<<now_cycle<<"  ISSUED?\t"<<m_is_issued<<std::endl;
         this->print_all_ins_table();
+		//this->m_func_table->print_func_table_busy_bit();
        // ++now_cycle;
 
 
@@ -490,4 +493,22 @@ void INS_ALL_PER_WARP::print_all_ins_table() const{
     for(INS_ONE_LINE one_line : m_ins_table){
         one_line.print_one_ins_time();
     }
+}
+
+
+void INS_ALL_PER_WARP::get_cycles_occ_func_per_warp(vector<std::pair<int,int>>& cycles_true_all_per_warp) {
+
+	if (!is_all_ins_done())
+		return;
+
+	cycles_true_all_per_warp.clear();
+	cycles_true_all_per_warp = vector<std::pair<int, int >>(6);
+
+	for (auto iter = m_ins_table.begin(); iter != m_ins_table.end(); iter++) {
+		cycles_true_all_per_warp[int(iter->get_cycles_occ_func_unit().first)] = iter->get_cycles_occ_func_unit().second;
+	}
+	return;
+
+
+
 }

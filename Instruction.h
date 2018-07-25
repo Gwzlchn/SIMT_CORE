@@ -50,7 +50,7 @@ struct INSTRUCTION
     void print_one_ins() const;
 };
 
-
+typedef std::pair<FUNC_UNIT, std::pair<int, int>>  FUNC_TRUE_ALL;
 
 class INS_ONE_LINE{
 
@@ -69,6 +69,13 @@ public:
 
     void set_all_time(bool n_can_issue,bool n_can_oc,
                       bool n_can_wb,int now_cycle);
+
+
+
+
+	//计算占用部件周期数
+	//真，占用 假占用
+	FUNC_TRUE_ALL get_cycles_occ_func_unit();
 
 
 };
@@ -100,5 +107,6 @@ public:
     void clear_func_table(int now_cycles);
     int active_threads_this_warp() const;
     void setActive_threads_this_warp(int active_threads_this_warp);
+	void get_cycles_occ_func_per_warp(vector<std::pair<int, int>>& cycles_true_all_per_warp);
 };
 #endif // INSTRUCTIONS_H

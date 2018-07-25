@@ -26,6 +26,8 @@ class FUNC_TABLE{
     vector<vector<int>> m_func_table;
 public:
     FUNC_TABLE();
+
+	void print_func_table_busy_bit();
     bool is_func_unit_valid(FUNC_UNIT now_op);
     void occupy_func_table_one(FUNC_UNIT to_occupy,INSTRUCTION* now_ins);
 

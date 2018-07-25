@@ -116,22 +116,53 @@ bool WARP_POOL::is_all_warps_done() const{
     return true;
 }
 
+void WARP_POOL::print_cycles_occ_func_all_warp()
+{
+
+	vector<std::pair<int, int>> total_cycles(6), temp_cycles(6);
+
+	for (auto iter = m_all_warps_ins.begin(); iter != m_all_warps_ins.end(); iter++) {
+		iter->get_cycles_occ_func_per_warp(temp_cycles);
+		add_two_vec_pair(total_cycles, temp_cycles);
+
+	}
+
+	for (auto iter = total_cycles.begin(); iter != total_cycles.end(); iter++) {
+		cout << iter->first << "\t" << iter->second << endl;
+	}
+
+	
+
+
+
+}
+
+
+void WARP_POOL::add_two_vec_pair(vector<std::pair<int, int>>& dst, const vector<std::pair<int, int>>& src) {
+	auto srciter = src.begin();
+	for (auto iter = dst.begin(); iter != dst.end(); iter++,srciter++) {
+		iter->first += srciter->first;
+		iter->second += srciter->second;
+	}
+	return;
+}
+
+
 
 void WARP_POOL::run_all_warp(){
-    bool all_warps_not_yet = true;
-    while(all_warps_not_yet){
+    //bool all_warps_not_yet = true;
+    while(!is_all_warps_done()){
         for(int i=0;i<m_all_warps_ins.size();i++){
             run_in_one_Cycle();
-            if(is_all_warps_done()){
-                all_warps_not_yet = false;
-                break;
-            }
+            
         }
          m_Cycle++;
          for(int i=0;i<m_all_warps_ins.size();i++){
              m_all_warps_ins[i].clear_func_table(m_Cycle);
          }
+		 this->m_func_table->print_func_table_busy_bit();
     }
+	
 }
 
 
@@ -146,7 +177,7 @@ void WARP_POOL::run_in_one_Cycle(){
 
     int this_cycle_issued = 0;
 
-    std::vector<INS_ALL_PER_WARP>::iterator temp_iter = m_now_iter;
+    auto temp_iter = m_now_iter;
     for(;m_now_iter!=m_all_warps_ins.end();m_now_iter++){
         if(this_cycle_issued<Can_Issue_Meantime){
             m_now_iter->go_to_this_cycle(m_Cycle);

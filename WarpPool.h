@@ -35,6 +35,9 @@ public:
     void run_in_one_Cycle();
     bool is_all_warps_done() const;
 
+	void print_cycles_occ_func_all_warp();
+	void add_two_vec_pair(vector<std::pair<int, int>>& dst, const vector<std::pair<int, int>>& src);
+
 };
 
 #endif // WARPPOLL_H
