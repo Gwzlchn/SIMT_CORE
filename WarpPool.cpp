@@ -10,6 +10,13 @@ int WARP_POOL::Threads_Per_Warp = 32;
 int WARP_POOL::Can_Issue_Meantime = 2;
 int WARP_POOL::Warps_Per_Poll = 4;
 
+
+
+
+
+
+
+
 WARP_POOL::WARP_POOL()
 {
 
@@ -21,6 +28,24 @@ WARP_POOL::WARP_POOL()
         m_now_iter = m_all_warps_ins.begin();
 
 }
+
+WARP_POOL::WARP_POOL(std::vector<std::pair<std::string, int>> to_launch_kernels)
+{
+	m_Cycle = 1;
+	m_occupied_warps = 0;
+	m_func_table = new FUNC_TABLE();
+	for (auto iter = to_launch_kernels.begin(); iter != to_launch_kernels.end(); iter++) {
+		launch_one_kernel(QString::fromStdString(iter->first), iter->second);
+	}
+	if (!m_all_warps_ins.empty())
+		m_now_iter = m_all_warps_ins.begin();
+}
+
+
+
+
+
+
 
 
 
@@ -36,7 +61,7 @@ void WARP_POOL::launch_all_kernel(){
 
     int n_warp = int(ceil(threads / Threads_Per_Warp));
 
-    launch_one_kernel(file_name,threads);
+    //launch_one_kernel(file_name,threads);
 
     file_name = "ptx_ins-1.txt";
     launch_one_kernel(file_name,threads);

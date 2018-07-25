@@ -28,6 +28,7 @@ private:
 
 public:
     WARP_POOL();
+	WARP_POOL(std::vector<std::pair<std::string, int>> to_launch_kernels);
     void run_all_warp();
     int launch_one_kernel(QString ins_file_name,int threads);
     void launch_all_kernel();
