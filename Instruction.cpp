@@ -131,7 +131,7 @@ void INS_ONE_LINE::set_all_time(bool n_can_issue,bool n_can_oc,
         return;
     }
     if(n_can_oc && this->m_oc_time == 0){
-        this->m_oc_time = now_cycle;
+        this->m_oc_time = now_cycle + 1 ;
         this->m_is_ex = true;
         return;
     }
@@ -146,7 +146,7 @@ void INS_ONE_LINE::set_all_time(bool n_can_issue,bool n_can_oc,
     }
 }
 
-FUNC_TRUE_ALL INS_ONE_LINE::get_cycles_occ_func_unit()
+FUNC_TRUE_ALL INS_ONE_LINE::get_cycles_occ_func_unit() const
 {
 	return{ m_func_unit,{m_one_ins->ins_cycle,m_wb_time - m_issue_time + 1} };
 }
@@ -290,56 +290,55 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle) const{
     switch (m_op) {
     case LD:
     case ST:
-        if(m_func_table->is_func_unit_valid(INTEGER)){
-            m_func_table->occupy_func_table_one(INTEGER,n_ins);
-            //m_reg_status[n_dst] = INTEGER;
-            m_ins_table[n].m_func_unit = INTEGER;
+        if(m_func_table->is_func_unit_valid(MEMPIPE)){
+            m_func_table->occupy_func_table_one(MEMPIPE,n_ins);
+            //m_reg_status[n_dst] = MEMPIPE;
+            m_ins_table[n].m_func_unit = MEMPIPE;
 
-            n_ins->ins_cycle += m_func_table->get_extra_ex_time(INTEGER,m_active_threads_this_warp);
+            n_ins->ins_cycle += m_func_table->get_extra_ex_time(MEMPIPE,m_active_threads_this_warp);
 
             return true;
         }
 
         break;
     case MULTD:
-        if(m_func_table->is_func_unit_valid(MULT1)){
-            m_func_table->occupy_func_table_one(MULT1,n_ins);
-            //m_reg_status[n_dst] = MULT1;
-            m_ins_table[n].m_func_unit = MULT1;
-            n_ins->ins_cycle += m_func_table->get_extra_ex_time(MULT1,m_active_threads_this_warp);
+	case DIVD:
+        if(m_func_table->is_func_unit_valid(SFU1)){
+            m_func_table->occupy_func_table_one(SFU1,n_ins);
+            //m_reg_status[n_dst] = SFU1;
+            m_ins_table[n].m_func_unit = SFU1;
+            n_ins->ins_cycle += m_func_table->get_extra_ex_time(SFU1,m_active_threads_this_warp);
             return true;
         }
-        else if(m_func_table->is_func_unit_valid(MULT2)){
-            m_func_table->occupy_func_table_one(MULT2,n_ins);
-            //m_reg_status[n_dst] = MULT2;
-            m_ins_table[n].m_func_unit =  MULT2;
-            n_ins->ins_cycle += m_func_table->get_extra_ex_time(MULT2,m_active_threads_this_warp);
+        else if(m_func_table->is_func_unit_valid(SFU2)){
+            m_func_table->occupy_func_table_one(SFU2,n_ins);
+            //m_reg_status[n_dst] = SFU2;
+            m_ins_table[n].m_func_unit =  SFU2;
+            n_ins->ins_cycle += m_func_table->get_extra_ex_time(SFU2,m_active_threads_this_warp);
             return true;
         }
-        break;
-    case DIVD:
-        if(m_func_table->is_func_unit_valid(DIVIDE1)){
-            m_func_table->occupy_func_table_one(DIVIDE1,n_ins);
-           // m_reg_status[n_dst] = DIVIDE1;
-            m_ins_table[n].m_func_unit = DIVIDE1;
-            n_ins->ins_cycle += m_func_table->get_extra_ex_time(DIVIDE1,m_active_threads_this_warp);
+        if(m_func_table->is_func_unit_valid(SFU3)){
+            m_func_table->occupy_func_table_one(SFU3,n_ins);
+           // m_reg_status[n_dst] = SFU3;
+            m_ins_table[n].m_func_unit = SFU3;
+            n_ins->ins_cycle += m_func_table->get_extra_ex_time(SFU3,m_active_threads_this_warp);
             return true;
         }
         break;
     case ADDD:
     case SUBD:
-        if(m_func_table->is_func_unit_valid(ADD1)){
-            m_func_table->occupy_func_table_one(ADD1,n_ins);
-            //m_reg_status[n_dst] = ADD1;
-            m_ins_table[n].m_func_unit = ADD1;
-            n_ins->ins_cycle += m_func_table->get_extra_ex_time(ADD1,m_active_threads_this_warp);
+        if(m_func_table->is_func_unit_valid(SP1)){
+            m_func_table->occupy_func_table_one(SP1,n_ins);
+            //m_reg_status[n_dst] = SP1;
+            m_ins_table[n].m_func_unit = SP1;
+            n_ins->ins_cycle += m_func_table->get_extra_ex_time(SP1,m_active_threads_this_warp);
             return true;
         }
-        else if(m_func_table->is_func_unit_valid(ADD2)){
-            m_func_table->occupy_func_table_one(ADD2,n_ins);
-            //m_reg_status[n_dst] = ADD2;
-            m_ins_table[n].m_func_unit = ADD2;
-            n_ins->ins_cycle += m_func_table->get_extra_ex_time(ADD2,m_active_threads_this_warp);
+        else if(m_func_table->is_func_unit_valid(SP2)){
+            m_func_table->occupy_func_table_one(SP2,n_ins);
+            //m_reg_status[n_dst] = SP2;
+            m_ins_table[n].m_func_unit = SP2;
+            n_ins->ins_cycle += m_func_table->get_extra_ex_time(SP2,m_active_threads_this_warp);
             return true;
         }
         break;

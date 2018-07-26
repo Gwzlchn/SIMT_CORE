@@ -6,26 +6,23 @@
 #include<QDebug>
 #include<QTextStream>
 
-BETTER_ENUM(Channel, int, Red, Green = 2, Blue)
-
 int main(int argc, char *argv[]) {
 
-	
-
+	/*
+	BETTER_ENUM(Channel, int, Red, Green = 2, Blue)
 	for (size_t index = 0; index < Channel::_size(); ++index) {
 		const char  *name = Channel::_names()[index];
 		std::cout << name << " ";
 	}
-	std::cout << std::endl;
+	std::cout << std::endl;*/
 
 
-
-/*
 	WARP_POOL* pool = new WARP_POOL({
 		{"ptx_ins.txt",32},{"ptx_ins-1.txt",32}
 	 });
     pool->run_all_warp();
+	std::cout << "真占用周期\t" << "假占用周期\n";
 	pool->print_cycles_occ_func_all_warp();
-*/
+
     return 0;
 }

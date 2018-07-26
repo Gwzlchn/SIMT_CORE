@@ -174,10 +174,12 @@ void WARP_POOL::run_in_one_Cycle(){
     }
 
     //未流出的，循环优先级决定谁流出
-
     int this_cycle_issued = 0;
-
+	//记录之前被循环调度的最后一个Warp指针
     auto temp_iter = m_now_iter;
+	//从该Warp走到最后一个Warp指针，轮询是否有可以流出的
+	//如果当前流出的Warp数大于每周期可同时流出总数，则返回
+	//(一个Warp一个周期之能流出一条指令)
     for(;m_now_iter!=m_all_warps_ins.end();m_now_iter++){
         if(this_cycle_issued<Can_Issue_Meantime){
             m_now_iter->go_to_this_cycle(m_Cycle);
@@ -188,6 +190,8 @@ void WARP_POOL::run_in_one_Cycle(){
             return;
         }
     }
+	//从第一个Warp轮询到临时Warp指针的前一个,实现循环优先级
+	//如果当前流出的Warp数大于每周期可同时流出总数，则返回
     m_now_iter = m_all_warps_ins.begin();
     for(;m_now_iter!=temp_iter;m_now_iter++){
         if(this_cycle_issued<Can_Issue_Meantime){

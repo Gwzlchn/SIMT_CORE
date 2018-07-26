@@ -18,7 +18,7 @@ extern std::map<INS_OP,std::string> INS_OP_MAP;
 
 //寄存器、指令周期不允许修改
 enum REGISTER{
-    F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,R1,R2,R3,R4
+    F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,R0,R1,R2,R3,R4
 };
 
 extern std::map<REGISTER,std::string> REGISTER_MAP;
@@ -71,7 +71,7 @@ public:
 
 	//计算占用部件周期数
 	//真，占用 假占用
-	FUNC_TRUE_ALL get_cycles_occ_func_unit();
+	FUNC_TRUE_ALL get_cycles_occ_func_unit() const;
 
 
 };

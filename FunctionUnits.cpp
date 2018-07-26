@@ -3,7 +3,7 @@
 #include<iostream>
 
 map<FUNC_UNIT,int> FUNC_UNIT_CNT_MAP{
-    {INTEGER,32},{MULT1,8},{MULT2,16},{ADD1,32},{ADD2,16},{DIVIDE1,16}
+    {MEMPIPE,32},{SFU1,8},{SFU2,16},{ SFU3,16 },{SP1,32},{SP2,16}
 };
 
 
