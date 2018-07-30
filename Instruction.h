@@ -7,10 +7,9 @@
 #include<QString>
 #include<vector>
 #include"FunctionUnits.h"
+#include"Parameters.h"
 
 
-
-extern std::map<INS_OP,std::string> INS_OP_MAP;
 
 
 
@@ -25,7 +24,7 @@ extern std::map<REGISTER,std::string> REGISTER_MAP;
 
 
 //指令执行周期
-extern std::map<INS_OP,int> INS_EX_CYCLE;
+
 
 
 
@@ -42,9 +41,10 @@ struct INSTRUCTION
     INSTRUCTION(QString one_ins);
     void set_one_ins(std::string one_ins_op,std::string one_ins_dst,std::string one_ins_src1,std::string one_ins_src2);
     void print_one_ins() const;
+	REGISTER get_reg_from_str(std::string);
 };
 
-typedef std::pair<FUNC_UNIT, std::pair<int, int>>  FUNC_TRUE_ALL;
+typedef std::pair<int, std::pair<int, int>>  FUNC_TRUE_ALL;
 
 class INS_ONE_LINE{
 

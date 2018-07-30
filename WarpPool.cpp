@@ -118,7 +118,7 @@ bool WARP_POOL::is_all_warps_done() const{
 
 void WARP_POOL::print_cycles_occ_func_all_warp()
 {
-	int func_count = QMetaEnum::fromType<FUNC_UNIT>().keyCount();
+	int func_count = FUNC_UNIT_CLASS::get_enum_count();
 	vector<std::pair<int, int>> total_cycles(func_count), temp_cycles(func_count);
 
 	for (auto iter = m_all_warps_ins.begin(); iter != m_all_warps_ins.end(); iter++) {

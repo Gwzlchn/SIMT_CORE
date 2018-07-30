@@ -4,7 +4,7 @@
 
 #include"Instruction.h"
 #include"FunctionUnits.h"
-
+#include"Parameters.h"
 
 
 

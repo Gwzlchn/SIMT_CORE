@@ -52,6 +52,9 @@
     <ClCompile Include="mainwindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Parameters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Instruction.h">
@@ -60,7 +63,7 @@
     <ClInclude Include="WarpPool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BetterEnum.h">
+    <ClInclude Include="FunctionUnits.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -71,9 +74,6 @@
     <CustomBuild Include="release\moc_predefs.h.cbt">
       <Filter>Generated Files</Filter>
     </CustomBuild>
-    <ClInclude Include="ui_mainwindow.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="mainwindow.ui">
@@ -81,7 +81,7 @@
     </QtUic>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="FunctionUnits.h">
+    <QtMoc Include="Parameters.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

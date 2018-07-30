@@ -8,7 +8,6 @@
 
 
 
-
 using std::cout;
 using std::endl;
 
@@ -16,16 +15,9 @@ using std::endl;
 std::map<REGISTER,std::string> REGISTER_MAP{
     {F1,"F1"},{F2,"F2"},{F3,"F3"},{F4,"F4"},{F5,"F5"},
     {F6,"F6"},{F7,"F7"},{F8,"F8"},{F9,"F9"},{F10,"F10"},
-    {R1,"R1"},{R2,"R2"},{R3,"R3"},{R4,"R4"}
+	{R0,"R1"}, {R1,"R1"},{R2,"R2"},{R3,"R3"},{R4,"R4"}
 };
 
-
-std::map<INS_OP,std::string> INS_OP_MAP{
-    {LD,"LD"},{ST,"ST"},{MULTD,"MULTD"},{SUBD,"SUBD"},{DIVD,"DIVD"},{ADDD,"ADDD"}
-};
-std::map<INS_OP,int> INS_EX_CYCLE{
-    {LD,2},{ST,4},{MULTD,20},{DIVD,40},{ADDD,1},{SUBD,10}
-};
 
 
 
@@ -43,42 +35,15 @@ INSTRUCTION::INSTRUCTION(QString one_ins)
 
 void INSTRUCTION::set_one_ins(std::string one_ins_op, std::string one_ins_dst, std::string one_ins_src1, std::string one_ins_src2){
 
-    auto it = REGISTER_MAP.end();
-    it = std::find_if(REGISTER_MAP.begin(), REGISTER_MAP.end(), [one_ins_dst](auto item)
-    {
-        return item.second == one_ins_dst;
-    });
-    if (it!=REGISTER_MAP.end())
-        ins_dst = (*it).first;
+	ins_dst = get_reg_from_str(one_ins_dst);
+	ins_src1 = get_reg_from_str(one_ins_src1);
+	ins_src2 = get_reg_from_str(one_ins_src2);
 
-    it = std::find_if(REGISTER_MAP.begin(), REGISTER_MAP.end(), [one_ins_src1](auto item)
-    {
-        return item.second == one_ins_src1;
-    });
-    if (it!=REGISTER_MAP.end())
-        ins_src1 = (*it).first;
-
-    auto it4 = REGISTER_MAP.end();
-    it4 = std::find_if(REGISTER_MAP.begin(), REGISTER_MAP.end(), [one_ins_src2](auto item)
-    {
-        return item.second == one_ins_src2;
-    });
-    if (it4!=REGISTER_MAP.end())
-        ins_src2 = (*it4).first;
+	ins_op = get_op_from_str(one_ins_op);
 
 
-    auto it2 =std::find_if(INS_OP_MAP.begin(), INS_OP_MAP.end(), [one_ins_op](auto item)
-    {
-        return item.second == one_ins_op;
-    });
-    if (it2!=INS_OP_MAP.end())
-        ins_op = (*it2).first;
-
-
-
-    auto it3 =INS_EX_CYCLE.find(ins_op);
-    ins_cycle = (*it3).second;
-
+	ins_cycle = get_op_cycles(ins_op);
+	//ins_cycle = 1;
 
 	//为了好看
 	ins_op_str = one_ins_op;
@@ -92,6 +57,17 @@ void INSTRUCTION::set_one_ins(std::string one_ins_op, std::string one_ins_dst, s
 
 void INSTRUCTION::print_one_ins() const{
     std::cout<<"ENUM type: " <<" OP "<<ins_op_str <<"\tCYCLES:"<<ins_cycle<<"\tdst:"<<ins_dst_str<<"\tsrc1:"<<ins_src1_str<<"\tsrc2:"<<ins_src2_str<<"\t";
+}
+
+REGISTER INSTRUCTION::get_reg_from_str(std::string reg_str)
+{
+	auto it = REGISTER_MAP.end();
+	it = std::find_if(REGISTER_MAP.begin(), REGISTER_MAP.end(), [reg_str](auto item)
+	{
+		return item.second == reg_str;
+	});
+	if (it != REGISTER_MAP.end())
+		return  (*it).first;
 }
 
 
@@ -385,7 +361,7 @@ bool INS_ALL_PER_WARP::n_th_ins_can_oc(int n,int now_cycle) const{
     //当前指令源寄存器
     REGISTER n_src1 = m_ins_table[n].m_one_ins->ins_src1;
     REGISTER n_src2 = m_ins_table[n].m_one_ins->ins_src2;
-	bool n_can_oc = false;
+
     for(int i=0;i<n;i++){
         REGISTER i_dst = m_ins_table[i].m_one_ins->ins_dst;
         if(m_ins_table[i].is_active()){
@@ -458,7 +434,7 @@ void INS_ALL_PER_WARP::go_to_this_cycle(int now_cycle){
         bool i_ins_can_oc = n_th_ins_can_oc(i,now_cycle);
         bool i_ins_can_wb = n_th_ins_can_wb(i,now_cycle);
         m_ins_table[i].set_all_time(i_ins_can_is,i_ins_can_oc,i_ins_can_wb,now_cycle);
-		int* a = &(this)->m_ins_table[1].m_issue_time;
+		
 
     }
 

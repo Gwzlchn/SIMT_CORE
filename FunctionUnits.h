@@ -5,35 +5,13 @@
 #include<vector>
 #include<map>
 #include<QObject>
+#include"Parameters.h"
 
 using std::map;
 using std::vector;
 struct INSTRUCTION;
 
 
-//唯一允许修改的，功能部件个数
-enum INS_OP {
-	LD, ST, MULTD, SUBD, DIVD, ADDD
-};
-
-
-
-
-class FUNC_UNIT_CLASS :public QObject {
-
-	Q_OBJECT
-public:
-	enum FUNC_UNITS{
-    MEMPIPE1=0,SFU1,SFU2,SFU3,SP1,SP2,SP3
-	};
-	Q_ENUM(FUNC_UNITS)
-
-};
-
-
-typedef FUNC_UNIT_CLASS::FUNC_UNITS  FUNC_UNIT;
-
-extern map<FUNC_UNIT, int> FUNC_UNIT_CNT_MAP;
 
 
 

@@ -4,25 +4,11 @@
 #include<QMetaObject>
 #include<QMetaEnum>
 
-std::map<INS_OP,std::string> INS_FUNC_MAP{
-	{LD,"MEMPIPE"},{ST,"MEMPIPE"},
-	{MULTD,"SFU"},{DIVD,"SFU"},
-	{ADDD,"SP"},{SUBD,"SP"}
-};
-
-map<FUNC_UNIT, int> FUNC_UNIT_CNT_MAP{
-	{ FUNC_UNIT_CLASS::MEMPIPE1,32 },
-	{ FUNC_UNIT_CLASS::SFU1,8 },{ FUNC_UNIT_CLASS::SFU2,16 },{ FUNC_UNIT_CLASS::SFU3,16 },
-	{ FUNC_UNIT_CLASS::SP1,32 },{ FUNC_UNIT_CLASS::SP2,16 },{ FUNC_UNIT_CLASS::SP3,16 }
-};
-
-
-
 
 
 FUNC_TABLE:: FUNC_TABLE(){
-	int func_count = QMetaEnum::fromType<FUNC_UNIT>().keyCount();
-   m_func_table = vector<vector<int>>(func_count,vector<int>(9));
+	//int func_count = QMetaEnum::fromType<FUNC_UNIT>().keyCount();
+   m_func_table = vector<vector<int>>(FUNC_UNIT_CLASS::get_enum_count(),vector<int>(9));
 }
 
 
@@ -92,8 +78,8 @@ int FUNC_TABLE::get_extra_ex_time(FUNC_UNIT now_func_unit, int threads_per_warp)
     if(threads_per_warp == 0)
         return 0;
 
-    auto it = FUNC_UNIT_CNT_MAP.find(now_func_unit);
-    int now_op_cnt = (*it).second;
+	int now_op_cnt = get_func_cnt_from_func(now_func_unit);
+
     double extra_ex = (threads_per_warp / double(now_op_cnt))  -1;
     return int(ceil(extra_ex));
 }
@@ -103,8 +89,8 @@ bool FUNC_TABLE::find_func_unit_valid(INS_OP ins_op, FUNC_UNIT & to_occ)
 	QMetaEnum func_enum = QMetaEnum::fromType<FUNC_UNIT>();
 	int func_count =func_enum.keyCount();
 
-	auto iter = INS_FUNC_MAP.find(ins_op);
-	QString op_str = QString::fromStdString(iter->second);
+	
+	QString op_str = QString::fromStdString(get_op_str_from_enum(ins_op));
 
 	for (int i = 0; i < func_count; i++) {
 		FUNC_UNIT now_unit = FUNC_UNIT(func_enum.value(i));
@@ -116,8 +102,7 @@ bool FUNC_TABLE::find_func_unit_valid(INS_OP ins_op, FUNC_UNIT & to_occ)
 		}
 	}
 
-	
-	
+
 	
 	return false;
 }
