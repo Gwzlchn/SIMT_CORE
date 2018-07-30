@@ -287,7 +287,15 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle) const{
     //结构冒险
     INS_OP m_op = n_ins->ins_op;
 
-    switch (m_op) {
+	FUNC_UNIT to_occ;
+	if (m_func_table->find_func_unit_valid(m_op, to_occ)) {
+		m_func_table->occupy_func_table_one(to_occ, n_ins);
+		m_ins_table[n].m_func_unit = to_occ;
+		n_ins->ins_cycle += m_func_table->get_extra_ex_time(to_occ, m_active_threads_this_warp);
+		return true;
+	}
+
+    /*switch (m_op) {
     case LD:
     case ST:
         if(m_func_table->is_func_unit_valid(MEMPIPE)){
@@ -344,7 +352,7 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle) const{
         break;
     default:
         return false;
-    }
+    }*/
     return false;
 }
 
@@ -480,13 +488,13 @@ void INS_ALL_PER_WARP::print_all_ins_table() const{
 }
 
 
-void INS_ALL_PER_WARP::get_cycles_occ_func_per_warp(vector<std::pair<int,int>>& cycles_true_all_per_warp) {
+void INS_ALL_PER_WARP::get_cycles_occ_func_per_warp(vector<std::pair<int,int>>& cycles_true_all_per_warp,int size) {
 
 	if (!is_all_ins_done())
 		return;
 
 	cycles_true_all_per_warp.clear();
-	cycles_true_all_per_warp = vector<std::pair<int, int >>(6);
+	cycles_true_all_per_warp = vector<std::pair<int, int >>(size);
 
 	for (auto iter = m_ins_table.begin(); iter != m_ins_table.end(); iter++) {
 		cycles_true_all_per_warp[int(iter->get_cycles_occ_func_unit().first)] = iter->get_cycles_occ_func_unit().second;

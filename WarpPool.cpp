@@ -2,7 +2,7 @@
 #include <iostream>
 #include<QTextStream>
 #include<QDebug>
-
+#include<QMetaEnum>
 using namespace std;
 
 
@@ -118,11 +118,11 @@ bool WARP_POOL::is_all_warps_done() const{
 
 void WARP_POOL::print_cycles_occ_func_all_warp()
 {
-
-	vector<std::pair<int, int>> total_cycles(6), temp_cycles(6);
+	int func_count = QMetaEnum::fromType<FUNC_UNIT>().keyCount();
+	vector<std::pair<int, int>> total_cycles(func_count), temp_cycles(func_count);
 
 	for (auto iter = m_all_warps_ins.begin(); iter != m_all_warps_ins.end(); iter++) {
-		iter->get_cycles_occ_func_per_warp(temp_cycles);
+		iter->get_cycles_occ_func_per_warp(temp_cycles,func_count);
 		add_two_vec_pair(total_cycles, temp_cycles);
 
 	}

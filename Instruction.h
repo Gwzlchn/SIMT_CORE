@@ -9,9 +9,7 @@
 #include"FunctionUnits.h"
 
 
-enum INS_OP{
-    LD ,ST,MULTD,SUBD,DIVD,ADDD
-};
+
 extern std::map<INS_OP,std::string> INS_OP_MAP;
 
 
@@ -100,9 +98,11 @@ public:
     void go_to_this_cycle(int now_cycle);
     void print_all_ins_table() const;
 
+	void get_cycles_occ_func_per_warp(vector<std::pair<int, int>>& cycles_true_all_per_warp, int size);
+
     void clear_func_table(int now_cycles);
     int active_threads_this_warp() const;
     void setActive_threads_this_warp(int active_threads_this_warp);
-	void get_cycles_occ_func_per_warp(vector<std::pair<int, int>>& cycles_true_all_per_warp);
+
 };
 #endif // INSTRUCTIONS_H
