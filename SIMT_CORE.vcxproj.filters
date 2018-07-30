@@ -40,9 +40,6 @@
     <ClCompile Include="FunctionUnits.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="I_Buffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Instruction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -57,18 +54,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="I_Buffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Instruction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WarpPool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <QtMoc Include="mainwindow.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <ClInclude Include="BetterEnum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
