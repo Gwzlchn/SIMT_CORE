@@ -15,7 +15,7 @@ enum INS_OP {
 
 
 std::map<INS_OP, int> INS_EX_CYCLE{
-	{ LD,2 },{ ST,4 },{ MULTD,20 },{ DIVD,40 },{ ADDD,1 },{ SUBD,10 }
+	{ LD,2 },{ ST,4 },{ MULTD,20 },{ DIVD,40 },{ ADDD,4 },{ SUBD,10 }
 };
 
 std::map<INS_OP, std::string> INS_FUNC_MAP{
@@ -76,6 +76,11 @@ INS_OP get_op_from_str(std::string op_str) {
 
 
 
+std::string get_func_str_from_enum(FUNC_UNIT func_occ) {
+	QMetaEnum func_enum = QMetaEnum::fromType<FUNC_UNIT>();
+	return   std::string(func_enum.valueToKey(func_occ));
+
+}
 
 
 int FUNC_UNIT_CLASS::get_enum_count()
@@ -88,3 +93,6 @@ int get_op_cycles(INS_OP ins_op) {
 	auto it3 = INS_EX_CYCLE.find(ins_op);
 	return it3->second;
 }
+
+
+

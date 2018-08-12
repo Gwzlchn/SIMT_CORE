@@ -8,7 +8,7 @@ using namespace std;
 
 int WARP_POOL::Threads_Per_Warp = 32;
 int WARP_POOL::Can_Issue_Meantime = 2;
-int WARP_POOL::Warps_Per_Poll = 4;
+int WARP_POOL::Warps_Per_Poll = ;
 
 
 
