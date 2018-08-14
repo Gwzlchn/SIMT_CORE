@@ -11,9 +11,9 @@
 class WARP_POOL
 {
 public:
-    static  int Threads_Per_Warp ;
-    static  int Warps_Per_Poll ;
-    static  int Can_Issue_Meantime ;
+    static  int m_Threads_Per_Warp ;
+    static  int m_Warps_Per_Poll ;
+    static  int m_Can_Issue_Meantime ;
 
 
 private:
@@ -37,6 +37,7 @@ public:
 
 	void print_cycles_occ_func_all_warp();
 	void add_two_vec_pair(vector<std::pair<int, int>>& dst, const vector<std::pair<int, int>>& src);
+	void print_all_warp();
 
 };
 

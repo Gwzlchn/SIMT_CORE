@@ -56,7 +56,7 @@ void INSTRUCTION::set_one_ins(std::string one_ins_op, std::string one_ins_dst, s
 }
 
 void INSTRUCTION::print_one_ins() const{
-    std::cout<<"ENUM type: " <<" OP "<<ins_op_str <<"\tCYCLES:"<<ins_cycle<<"\tdst:"<<ins_dst_str<<"\tsrc1:"<<ins_src1_str<<"\tsrc2:"<<ins_src2_str<<"\t";
+    std::cout<<"ENUM type: " <<" OP "<<ins_op_str <<" CYCLES:"<<ins_cycle<<" dst:"<<ins_dst_str<<" src1:"<<ins_src1_str<<"src2:"<<ins_src2_str<<"\t";
 }
 
 REGISTER INSTRUCTION::get_reg_from_str(std::string reg_str)
@@ -91,7 +91,8 @@ INS_ONE_LINE::INS_ONE_LINE(QString one_line){
 	m_war_wait_time = 0;
 
 	 m_occ_func_unit = "0";
-	
+	 m_i_cache_hint = is_cache_hint();
+	 m_i_cache_wait_time = I_Cache_Miss_Cycles ;
 	 m_extra_wait_in_pipe = 0;
 }
 
@@ -100,8 +101,12 @@ INS_ONE_LINE::INS_ONE_LINE(QString one_line){
 
 void INS_ONE_LINE::print_one_ins_time() const{
     m_one_ins->print_one_ins();
-    cout<<"ISSUE TIME: "<<m_issue_time<<"\t OC TIME:"<<m_oc_time<<"\t EX TIME: "<<m_ex_time
-       <<"\tWB TIME: "<<m_wb_time<<"\t m_waw_time: "<<m_waw_wait_time<<"\tFUNC_WAIT time"<<m_func_unit_wait_time<<"\t raw wait "<<m_raw_wait_time<<"\t war wait "<<m_war_wait_time<<endl;
+	//cout << "ISSUE TIME: " << m_issue_time << "\t OC TIME:" << m_oc_time << "\t EX TIME: " << m_ex_time
+	//	<< "\tWB TIME: " << m_wb_time;
+	//cout << " m_waw_time: " << m_waw_wait_time << "\tFUNC_WAIT time" << m_func_unit_wait_time << "\t raw wait " << m_raw_wait_time << "\t war wait " << m_war_wait_time;
+	cout<<"Cache hint "<<m_i_cache_hint<<" Occ Func "<<m_occ_func_unit<<"\tExtra time "<<m_extra_wait_in_pipe;
+
+	cout << endl;
 }
 
 
@@ -246,6 +251,14 @@ bool INS_ALL_PER_WARP::n_th_ins_can_issue(int n,int now_cycle) const {
             return false;
 
     }
+
+
+
+	if (!m_ins_table[n].m_i_cache_hint && m_ins_table[n].m_i_cache_wait_time != 0) {
+		if(this->m_cycle_changed)
+			m_ins_table[n].m_i_cache_wait_time--;
+		return false;
+	}
 
     //判断是否存在WAW
     REGISTER n_dst = m_ins_table[n].m_one_ins->ins_dst;
@@ -467,8 +480,8 @@ void INS_ALL_PER_WARP::go_to_this_cycle(int now_cycle){
     }
 
 
-        std::cout<<"now_CYCLE:"<<now_cycle<<"  ISSUED?\t"<<m_is_issued<<std::endl;
-        this->print_all_ins_table();
+       // std::cout<<"now_CYCLE:"<<now_cycle<<"  ISSUED?\t"<<m_is_issued<<std::endl;
+       // this->print_all_ins_table();
 	
 }
 

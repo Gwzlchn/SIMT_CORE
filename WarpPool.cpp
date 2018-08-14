@@ -6,9 +6,9 @@
 using namespace std;
 
 
-int WARP_POOL::Threads_Per_Warp = 32;
-int WARP_POOL::Can_Issue_Meantime = 2;
-int WARP_POOL::Warps_Per_Poll = 16;
+int WARP_POOL::m_Threads_Per_Warp = Threads_Per_Warp;
+int WARP_POOL::m_Can_Issue_Meantime = Can_Issue_Meantime;
+int WARP_POOL::m_Warps_Per_Poll = Warps_Per_Poll;
 
 
 
@@ -20,7 +20,7 @@ int WARP_POOL::Warps_Per_Poll = 16;
 WARP_POOL::WARP_POOL()
 {
 
-    m_Cycle = 1;
+    m_Cycle = 0;
     m_occupied_warps = 0;
     m_func_table = new FUNC_TABLE();
     launch_all_kernel();
@@ -86,7 +86,7 @@ void WARP_POOL::launch_all_kernel(){
 
 //返回>0 占据了多少个warp
 int WARP_POOL::launch_one_kernel(QString ins_file_name, int threads){
-    int n_warp = int(ceil(threads / Threads_Per_Warp));
+    int n_warp = (int)(ceil((double)threads / Threads_Per_Warp));
     if(m_occupied_warps + n_warp > Warps_Per_Poll){
         return 0;
     }
@@ -208,3 +208,10 @@ void WARP_POOL::run_in_one_Cycle(){
     return;
 }
 
+
+void WARP_POOL::print_all_warp() {
+	for (auto iter = m_all_warps_ins.begin(); iter != m_all_warps_ins.end(); iter++) {
+		iter->print_all_ins_table();
+		std::cout << std::endl;
+	}
+}

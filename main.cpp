@@ -18,11 +18,12 @@ int main(int argc, char *argv[]) {
 
 
 	WARP_POOL* pool = new WARP_POOL({
-		{"ptx_ins.txt",32},{"ptx_ins-1.txt",32}
+		{"ptx_ins.txt",64},{"ptx_ins-1.txt",64}
 	 });
     pool->run_all_warp();
 	std::cout << "真占用周期\t" << "假占用周期\n";
 	pool->print_cycles_occ_func_all_warp();
-
+	pool->print_all_warp();
+	system("pause");
     return 0;
 }

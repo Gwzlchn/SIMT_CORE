@@ -9,13 +9,21 @@
 
 
 
+
+
+const int Threads_Per_Warp = 32;
+const int Can_Issue_Meantime = 2;
+const int Warps_Per_Poll = 16;
+const double I_Cache_Miss_Rate = 0.2;
+const int I_Cache_Miss_Cycles = 20;
+
 enum INS_OP {
 	LD, ST, MULTD, SUBD, DIVD, ADDD
 };
 
 
 std::map<INS_OP, int> INS_EX_CYCLE{
-	{ LD,2 },{ ST,4 },{ MULTD,20 },{ DIVD,40 },{ ADDD,4 },{ SUBD,10 }
+	{ LD,20 },{ ST,4 },{ MULTD,20 },{ DIVD,40 },{ ADDD,4 },{ SUBD,10 }
 };
 
 std::map<INS_OP, std::string> INS_FUNC_MAP{
@@ -25,7 +33,7 @@ std::map<INS_OP, std::string> INS_FUNC_MAP{
 };
 
 std::map<FUNC_UNIT, int> FUNC_UNIT_CNT_MAP{
-	{ FUNC_UNIT_CLASS::MEMPIPE1,32 },
+	{ FUNC_UNIT_CLASS::MEMPIPE1,32 },{ FUNC_UNIT_CLASS::MEMPIPE2,32 },
 	{ FUNC_UNIT_CLASS::SFU1,8 },{ FUNC_UNIT_CLASS::SFU2,16 },{ FUNC_UNIT_CLASS::SFU3,16 },
 	{ FUNC_UNIT_CLASS::SP1,32 },{ FUNC_UNIT_CLASS::SP2,16 },{ FUNC_UNIT_CLASS::SP3,16 },{ FUNC_UNIT_CLASS::SP4,16 }
 };
@@ -96,3 +104,7 @@ int get_op_cycles(INS_OP ins_op) {
 
 
 
+
+bool is_cache_hint() {
+	return ((double)rand() / RAND_MAX > I_Cache_Miss_Rate) ? true : false;
+}

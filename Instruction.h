@@ -66,6 +66,8 @@ public:
 
 	mutable std::string m_occ_func_unit;
 	mutable int m_extra_wait_in_pipe;
+	mutable bool m_i_cache_hint;
+	mutable int m_i_cache_wait_time;
 
     INS_ONE_LINE(QString one_line);
     void print_one_ins_time() const;

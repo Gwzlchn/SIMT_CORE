@@ -8,7 +8,7 @@ class FUNC_UNIT_CLASS :public QObject {
 
 	Q_OBJECT
 public:
-	enum FUNC_UNITS{MEMPIPE1 = 0, SFU1, SFU2, SFU3, SP1, SP2, SP3, SP4};
+	enum FUNC_UNITS{MEMPIPE1 , MEMPIPE2, SFU1, SFU2, SFU3, SP1, SP2, SP3, SP4};
 	Q_ENUM(FUNC_UNITS)
 		static int get_enum_count();
 
@@ -17,7 +17,11 @@ public:
 typedef FUNC_UNIT_CLASS::FUNC_UNITS  FUNC_UNIT;
 
 
-
+extern const int Threads_Per_Warp ;
+extern const int Can_Issue_Meantime ;
+extern const int Warps_Per_Poll ;
+extern const double I_Cache_Miss_Rate ;
+extern const int I_Cache_Miss_Cycles ;
 
 extern enum INS_OP;
 
@@ -37,5 +41,6 @@ INS_OP get_op_from_str(std::string);
 
 int get_op_cycles(INS_OP);
 
+bool is_cache_hint();
 
 extern std::map<INS_OP, std::string> INS_OP_MAP;
